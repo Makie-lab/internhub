@@ -15,19 +15,17 @@ import {
   Globe,
   GraduationCap,
   MapPin,
-  Moon,
   Navigation,
   Pencil,
   Play,
   Search,
   SlidersHorizontal,
-  Sun,
   Users,
   Video,
   X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { FormEvent, useMemo, useState, useEffect } from "react";
+import { FormEvent, useMemo, useState } from "react";
 
 type Opportunity = {
   title: string;
@@ -43,6 +41,7 @@ type Opportunity = {
   posted: string;
   skills: string[];
   hasCertification?: boolean;
+  hasWebinar?: boolean;
 };
 
 const opportunities: Opportunity[] = [
@@ -74,6 +73,7 @@ const opportunities: Opportunity[] = [
     iconBg: "bg-blue-700 text-white",
     posted: "Posted 2h ago",
     skills: ["SQL", "Tableau"],
+    hasWebinar: true,
   },
   {
     title: "Software Engineering Intern",
@@ -89,6 +89,7 @@ const opportunities: Opportunity[] = [
     posted: "Posted yesterday",
     skills: ["TypeScript", "React"],
     hasCertification: true,
+    hasWebinar: true,
   },
   {
     title: "Junior Customer Success Associate",
@@ -103,6 +104,7 @@ const opportunities: Opportunity[] = [
     iconBg: "bg-blue-600 text-white",
     posted: "Posted 1d ago",
     skills: ["Customer success", "SaaS"],
+    hasWebinar: true,
   },
   {
     title: "Marketing Coordinator Intern",
@@ -154,17 +156,8 @@ export default function Home() {
   const [levels, setLevels] = useState<string[]>(["Internship"]);
   const [showHybrid, setShowHybrid] = useState(true);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== "undefined") {
-      return window.matchMedia("(prefers-color-scheme: dark)").matches;
-    }
-    return false;
-  });
   const [showCertOnly, setShowCertOnly] = useState(false);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
-  }, [darkMode]);
+  const [showWebinarOnly, setShowWebinarOnly] = useState(false);
 
   const formattedLocation = [city, region, country].filter(Boolean).join(", ") || "Your location";
   const profileIsEditing = !profileCreated || editingLocation;
@@ -179,13 +172,14 @@ export default function Home() {
       const isHybridAllowed = showHybrid || job.type !== "Hybrid";
       const levelMatches = levels.length === 0 || levels.includes(job.level);
       const certMatches = !showCertOnly || job.hasCertification === true;
-      return searchable.includes(query) && isRemoteAllowed && isHybridAllowed && levelMatches && certMatches;
+      const webinarMatches = !showWebinarOnly || job.hasWebinar === true;
+      return searchable.includes(query) && isRemoteAllowed && isHybridAllowed && levelMatches && certMatches && webinarMatches;
     });
 
     return [...filtered].sort((first, second) =>
       sortOrder === "Highest pay" ? second.pay.localeCompare(first.pay) : 0,
     );
-  }, [includeRemote, levels, searchQuery, showCertOnly, showHybrid, sortOrder]);
+  }, [includeRemote, levels, searchQuery, showCertOnly, showWebinarOnly, showHybrid, sortOrder]);
 
   function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -220,47 +214,13 @@ export default function Home() {
     setIncludeRemote(true);
     setShowHybrid(true);
     setShowCertOnly(false);
+    setShowWebinarOnly(false);
     setLevels(["Internship"]);
     setSortOrder("Newest");
   }
 
   return (
     <main className="min-h-[100dvh] overflow-hidden bg-background text-foreground">
-      {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-border bg-surface/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
-          <a className="flex shrink-0 items-center gap-2.5" href="#top" aria-label="InternHub home">
-            <span className="flex size-9 items-center justify-center rounded-[var(--radius-sm)] bg-accent text-white">
-              <BriefcaseBusiness size={18} strokeWidth={2.2} />
-            </span>
-            <span className="text-base font-bold tracking-tight text-foreground">internhub</span>
-          </a>
-          <nav className="hidden items-center gap-6 text-sm font-medium text-muted md:flex">
-            <a className="text-foreground" href="#opportunities">Find opportunities</a>
-            <a className="transition hover:text-foreground" href="#learn">Learn</a>
-            <a className="transition hover:text-foreground" href="#how-it-works">How it works</a>
-            <a className="transition hover:text-foreground" href="#employers">For employers</a>
-          </nav>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className="rounded-[var(--radius-sm)] p-2 text-muted transition hover:bg-accent-light hover:text-foreground"
-              aria-label="Toggle dark mode"
-            >
-              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-            {profileCreated && (
-              <button onClick={openLocationEditor} className="hidden items-center gap-1.5 rounded-[var(--radius-sm)] border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:border-border-hover sm:inline-flex">
-                <MapPin size={13} className="text-accent" /> {city || "Location"}
-              </button>
-            )}
-            <button onClick={openLocationEditor} className="rounded-[var(--radius-sm)] bg-accent px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-accent-hover active:scale-[0.98]">
-              {profileCreated ? "Edit profile" : "Get started"}
-            </button>
-          </div>
-        </div>
-      </header>
-
       {/* Hero */}
       <section id="top" className="relative border-b border-border bg-surface">
         <div className="pointer-events-none absolute -left-40 -top-40 size-[480px] rounded-full bg-accent/5 blur-3xl" />
@@ -273,7 +233,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
-            <h1 className="text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-5xl lg:text-[3.25rem]">
+            <h1 className="font-display text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-5xl lg:text-[3.25rem]">
               Opportunities that meet you where you are.
             </h1>
             <p className="mt-5 max-w-lg text-base leading-relaxed text-muted">
@@ -428,7 +388,7 @@ export default function Home() {
       <section id="opportunities" className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            <h2 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               Opportunities that fit your life
             </h2>
             <p className="mt-1.5 text-muted">Clear pay, clear expectations, location-aware details.</p>
@@ -497,9 +457,13 @@ export default function Home() {
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted">Learning</p>
                 <div className="mt-2.5 space-y-2 text-sm text-muted-foreground">
                   <label className="flex items-center gap-2">
-                    <input checked={showCertOnly} onChange={(e) => setShowCertOnly(e.target.checked)} type="checkbox" className="size-3.5 accent-accent" /> Certifications & webinars
+                    <input checked={showCertOnly} onChange={(e) => setShowCertOnly(e.target.checked)} type="checkbox" className="size-3.5 accent-accent" /> Certifications
                   </label>
-                  <p className="pl-[22px] text-xs text-muted">Show roles with online learning available</p>
+                  <p className="pl-[22px] text-xs text-muted">Show roles with certifications available</p>
+                  <label className="flex items-center gap-2">
+                    <input checked={showWebinarOnly} onChange={(e) => setShowWebinarOnly(e.target.checked)} type="checkbox" className="size-3.5 accent-accent" /> Webinars
+                  </label>
+                  <p className="pl-[22px] text-xs text-muted">Show roles with webinar access</p>
                 </div>
               </div>
 
@@ -609,6 +573,11 @@ export default function Home() {
                                 <GraduationCap size={12} /> Cert available
                               </span>
                             )}
+                            {job.hasWebinar && (
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400">
+                                <Video size={12} /> Webinar
+                              </span>
+                            )}
                             <button
                               onClick={() => setSelectedRole(job.title)}
                               className="ml-auto inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accent-hover"
@@ -639,7 +608,7 @@ export default function Home() {
       {/* How it works */}
       <section id="how-it-works" className="border-t border-border bg-surface">
         <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
-          <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          <h2 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             A clearer path from local to global
           </h2>
           <p className="mt-2 max-w-lg text-muted">
@@ -701,7 +670,7 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-              <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              <h2 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                 Level up with webinars and certifications
               </h2>
               <p className="mt-2 max-w-lg text-muted">
@@ -898,24 +867,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer id="employers" className="border-t border-border bg-surface">
-        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <div className="flex items-center gap-2 font-bold text-foreground">
-            <span className="flex size-7 items-center justify-center rounded-[var(--radius-xs)] bg-accent text-white">
-              <BriefcaseBusiness size={13} />
-            </span>
-            internhub
-          </div>
-          <div className="flex flex-wrap gap-x-5 gap-y-2">
-            <a href="#top" className="hover:text-foreground">Privacy</a>
-            <a href="#top" className="hover:text-foreground">Terms</a>
-            <a href="#top" className="hover:text-foreground">Help center</a>
-            <a href="#top" className="hover:text-foreground">For employers</a>
-          </div>
-          <p className="text-muted">2026 InternHub</p>
-        </div>
-      </footer>
     </main>
   );
 }
