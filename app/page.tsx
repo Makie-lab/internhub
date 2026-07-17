@@ -18,7 +18,6 @@ import {
   Play,
   Search,
   SlidersHorizontal,
-  Star,
   TrendingUp,
   Users,
   Video,
@@ -28,224 +27,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
-
-type Opportunity = {
-  title: string;
-  company: string;
-  location: string;
-  nearby: string;
-  pay: string;
-  type: "Remote" | "Hybrid" | "In person";
-  level: "Internship" | "Entry level";
-  scope: "Local" | "National" | "Global";
-  icon: string;
-  iconBg: string;
-  posted: string;
-  skills: string[];
-  hasCertification?: boolean;
-  hasWebinar?: boolean;
-};
-
-const opportunities: Opportunity[] = [
-  {
-    title: "Product Design Intern",
-    company: "Vercel",
-    location: "Remote, United States",
-    nearby: "Remote-friendly",
-    pay: "$32-$38/hr",
-    type: "Remote",
-    level: "Internship",
-    scope: "National",
-    icon: "V",
-    iconBg: "bg-black dark:bg-white dark:text-black text-white",
-    posted: "Posted today",
-    skills: ["Product design", "Figma"],
-    hasCertification: true,
-  },
-  {
-    title: "Data Analytics Intern",
-    company: "Capital One",
-    location: "Richmond, VA",
-    nearby: "8.4 mi away",
-    pay: "$28-$34/hr",
-    type: "In person",
-    level: "Internship",
-    scope: "Local",
-    icon: "C",
-    iconBg: "bg-blue-700 text-white",
-    posted: "Posted 2h ago",
-    skills: ["SQL", "Tableau"],
-    hasWebinar: true,
-  },
-  {
-    title: "Software Engineering Intern",
-    company: "Notion",
-    location: "New York, NY",
-    nearby: "Hybrid venue",
-    pay: "$36-$42/hr",
-    type: "Hybrid",
-    level: "Internship",
-    scope: "National",
-    icon: "N",
-    iconBg: "bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900",
-    posted: "Posted yesterday",
-    skills: ["TypeScript", "React"],
-    hasCertification: true,
-    hasWebinar: true,
-  },
-  {
-    title: "Junior Customer Success Associate",
-    company: "Webflow",
-    location: "San Francisco, CA",
-    nearby: "Hybrid venue",
-    pay: "$64k-$76k/yr",
-    type: "Hybrid",
-    level: "Entry level",
-    scope: "National",
-    icon: "W",
-    iconBg: "bg-blue-600 text-white",
-    posted: "Posted 1d ago",
-    skills: ["Customer success", "SaaS"],
-    hasWebinar: true,
-  },
-  {
-    title: "Marketing Coordinator Intern",
-    company: "Stripe",
-    location: "Remote, Global",
-    nearby: "Remote-friendly",
-    pay: "$30-$36/hr",
-    type: "Remote",
-    level: "Internship",
-    scope: "Global",
-    icon: "S",
-    iconBg: "bg-indigo-600 text-white",
-    posted: "Posted 3h ago",
-    skills: ["Content strategy", "Analytics"],
-    hasCertification: true,
-  },
-  {
-    title: "Frontend Engineering Intern",
-    company: "Linear",
-    location: "San Francisco, CA",
-    nearby: "12.1 mi away",
-    pay: "$40-$48/hr",
-    type: "In person",
-    level: "Internship",
-    scope: "National",
-    icon: "L",
-    iconBg: "bg-violet-600 text-white",
-    posted: "Posted 5h ago",
-    skills: ["React", "CSS", "TypeScript"],
-    hasCertification: true,
-  },
-  {
-    title: "Machine Learning Intern",
-    company: "OpenAI",
-    location: "San Francisco, CA",
-    nearby: "15.3 mi away",
-    pay: "$50-$60/hr",
-    type: "In person",
-    level: "Internship",
-    scope: "National",
-    icon: "O",
-    iconBg: "bg-emerald-600 text-white",
-    posted: "Posted 4h ago",
-    skills: ["Python", "PyTorch", "ML"],
-    hasCertification: true,
-    hasWebinar: true,
-  },
-  {
-    title: "DevOps Engineering Intern",
-    company: "GitLab",
-    location: "Remote, Global",
-    nearby: "Remote-friendly",
-    pay: "$35-$42/hr",
-    type: "Remote",
-    level: "Internship",
-    scope: "Global",
-    icon: "G",
-    iconBg: "bg-orange-600 text-white",
-    posted: "Posted 6h ago",
-    skills: ["Docker", "Kubernetes", "CI/CD"],
-    hasCertification: true,
-  },
-  {
-    title: "UX Research Intern",
-    company: "Figma",
-    location: "New York, NY",
-    nearby: "Hybrid venue",
-    pay: "$34-$40/hr",
-    type: "Hybrid",
-    level: "Internship",
-    scope: "National",
-    icon: "F",
-    iconBg: "bg-pink-600 text-white",
-    posted: "Posted 8h ago",
-    skills: ["User research", "Prototyping"],
-    hasWebinar: true,
-  },
-  {
-    title: "Junior Backend Developer",
-    company: "Supabase",
-    location: "Remote, United States",
-    nearby: "Remote-friendly",
-    pay: "$55k-$70k/yr",
-    type: "Remote",
-    level: "Entry level",
-    scope: "National",
-    icon: "S",
-    iconBg: "bg-green-600 text-white",
-    posted: "Posted 1d ago",
-    skills: ["PostgreSQL", "Node.js", "TypeScript"],
-    hasCertification: true,
-  },
-  {
-    title: "Content Writing Intern",
-    company: "HubSpot",
-    location: "Cambridge, MA",
-    nearby: "5.2 mi away",
-    pay: "$22-$28/hr",
-    type: "In person",
-    level: "Internship",
-    scope: "Local",
-    icon: "H",
-    iconBg: "bg-orange-500 text-white",
-    posted: "Posted 2d ago",
-    skills: ["SEO", "Copywriting", "CMS"],
-    hasWebinar: true,
-  },
-  {
-    title: "Mobile Development Intern",
-    company: "Spotify",
-    location: "Stockholm, Sweden",
-    nearby: "Remote-friendly",
-    pay: "$38-$45/hr",
-    type: "Remote",
-    level: "Internship",
-    scope: "Global",
-    icon: "S",
-    iconBg: "bg-green-500 text-white",
-    posted: "Posted 12h ago",
-    skills: ["React Native", "Swift", "Kotlin"],
-    hasCertification: true,
-    hasWebinar: true,
-  },
-  {
-    title: "Cybersecurity Analyst Intern",
-    company: "CrowdStrike",
-    location: "Austin, TX",
-    nearby: "Hybrid venue",
-    pay: "$36-$44/hr",
-    type: "Hybrid",
-    level: "Internship",
-    scope: "National",
-    icon: "C",
-    iconBg: "bg-red-600 text-white",
-    posted: "Posted 1d ago",
-    skills: ["Network security", "SIEM", "Python"],
-    hasCertification: true,
-  },
-];
+import { opportunities, parsePayToHourly } from "@/lib/data/opportunities";
 
 export default function Home() {
   const [savedJobs, setSavedJobs] = useState<string[]>([]);
@@ -259,7 +41,6 @@ export default function Home() {
   const [showWebinarOnly, setShowWebinarOnly] = useState(false);
   const [salaryRange, setSalaryRange] = useState<string[]>([]);
   const [workingHours, setWorkingHours] = useState<string[]>([]);
-  const [minRating, setMinRating] = useState(0);
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
@@ -285,12 +66,12 @@ export default function Home() {
       // Salary range filter
       let salaryMatches = true;
       if (salaryRange.length > 0) {
-        const payNum = parseFloat(job.pay.replace(/[^0-9.]/g, ""));
+        const hourlyRate = parsePayToHourly(job.pay);
         salaryMatches = salaryRange.some((range) => {
-          if (range === "$0-20/hr") return payNum >= 0 && payNum <= 20;
-          if (range === "$20-40/hr") return payNum > 20 && payNum <= 40;
-          if (range === "$40-60/hr") return payNum > 40 && payNum <= 60;
-          if (range === "$60+/hr") return payNum > 60;
+          if (range === "$0-20/hr") return hourlyRate >= 0 && hourlyRate <= 20;
+          if (range === "$20-40/hr") return hourlyRate > 20 && hourlyRate <= 40;
+          if (range === "$40-60/hr") return hourlyRate > 40 && hourlyRate <= 60;
+          if (range === "$60+/hr") return hourlyRate > 60;
           return true;
         });
       }
@@ -340,7 +121,6 @@ export default function Home() {
     setSortOrder("Newest");
     setSalaryRange([]);
     setWorkingHours([]);
-    setMinRating(0);
   }
 
   function toggleSalaryRange(range: string) {
@@ -568,26 +348,6 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="border-t border-border pt-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Rating</p>
-                <div className="mt-2.5 flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setMinRating(minRating === star ? 0 : star)}
-                      className={`rounded p-0.5 transition ${star <= minRating ? "text-amber-500" : "text-muted hover:text-amber-400"}`}
-                      aria-label={`${star} star${star > 1 ? "s" : ""}`}
-                    >
-                      <Star size={18} fill={star <= minRating ? "currentColor" : "none"} />
-                    </button>
-                  ))}
-                  {minRating > 0 && (
-                    <span className="ml-2 text-xs text-muted">{minRating}+ stars</span>
-                  )}
-                </div>
-              </div>
-
               <button onClick={clearFilters} className="w-full border-t border-border pt-4 text-left text-sm font-semibold text-accent hover:text-accent-hover">
                 Clear all
               </button>
@@ -625,9 +385,9 @@ export default function Home() {
                   {homepageOpportunities.map((job, index) => {
                   const isSaved = savedJobs.includes(job.title);
                   const typeColors: Record<string, string> = {
-                    Remote: "bg-violet-100 text-black dark:bg-violet-900/40 dark:text-black",
-                    "In person": "bg-blue-100 text-black dark:bg-blue-900/40 dark:text-black",
-                    Hybrid: "bg-teal-100 text-black dark:bg-teal-900/40 dark:text-black",
+                    Remote: "bg-violet-100 text-black dark:bg-violet-900/40 dark:text-violet-100",
+                    "In person": "bg-blue-100 text-black dark:bg-blue-900/40 dark:text-blue-100",
+                    Hybrid: "bg-teal-100 text-black dark:bg-teal-900/40 dark:text-teal-100",
                   };
                   const scopeColors: Record<string, string> = {
                     Local: "text-emerald-600 dark:text-emerald-400",

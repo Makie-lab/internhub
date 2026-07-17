@@ -13,15 +13,10 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
-  // Relax strict rules to prevent lint from blocking builds
   {
     rules: {
       "@typescript-eslint/no-unused-vars": "warn",
-      "@typescript-eslint/no-explicit-any": "off",
       "react-hooks/exhaustive-deps": "warn",
-      "@next/next/no-img-element": "warn",
-      "react/no-unescaped-entities": "off",
-      "@next/next/no-html-link-for-pages": "off",
     },
   },
 ]);
