@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Restructure the single-page app into multi-page routing, create a shared layout with a new navbar (Home, For Employees, For Students, Post), add a second Google font for headings on the homepage, and separate the Certifications and Webinars filter checkboxes.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "In app/layout.tsx, add a second Google font (e.g., Playfair Display or DM Serif Display) for headings/display text. Export its CSS variable alongside the existing Geist fonts. Add the variable class to the html element.",
     "In app/globals.css, add a --font-display CSS variable referencing the new font, and add it to the @theme inline block so Tailwind can use it (e.g., --font-display).",
@@ -32,5 +32,5 @@
     "npm run lint"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "React 19 eslint rules (react-hooks/set-state-in-effect and react-hooks/refs) are strict - cannot call setState inside useEffect or access refs during render. Used lazy initializer for useState and onClick handlers instead. Tailwind v4 @theme inline uses --font-display referencing --font-playfair (the next/font CSS variable) to avoid circular reference."
 }
