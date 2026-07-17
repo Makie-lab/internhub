@@ -42,6 +42,7 @@ type Opportunity = {
   iconBg: string;
   posted: string;
   skills: string[];
+  hasCertification?: boolean;
 };
 
 const opportunities: Opportunity[] = [
@@ -58,6 +59,7 @@ const opportunities: Opportunity[] = [
     iconBg: "bg-black dark:bg-white dark:text-black text-white",
     posted: "Posted today",
     skills: ["Product design", "Figma"],
+    hasCertification: true,
   },
   {
     title: "Data Analytics Intern",
@@ -86,6 +88,7 @@ const opportunities: Opportunity[] = [
     iconBg: "bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900",
     posted: "Posted yesterday",
     skills: ["TypeScript", "React"],
+    hasCertification: true,
   },
   {
     title: "Junior Customer Success Associate",
@@ -114,6 +117,7 @@ const opportunities: Opportunity[] = [
     iconBg: "bg-indigo-600 text-white",
     posted: "Posted 3h ago",
     skills: ["Content strategy", "Analytics"],
+    hasCertification: true,
   },
   {
     title: "Frontend Engineering Intern",
@@ -128,6 +132,7 @@ const opportunities: Opportunity[] = [
     iconBg: "bg-violet-600 text-white",
     posted: "Posted 5h ago",
     skills: ["React", "CSS", "TypeScript"],
+    hasCertification: true,
   },
 ];
 
@@ -150,6 +155,7 @@ export default function Home() {
   const [showHybrid, setShowHybrid] = useState(true);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [darkMode, setDarkMode] = useState(false);
+  const [showCertOnly, setShowCertOnly] = useState(false);
 
   useEffect(() => {
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -172,13 +178,14 @@ export default function Home() {
       const isRemoteAllowed = includeRemote || job.type !== "Remote";
       const isHybridAllowed = showHybrid || job.type !== "Hybrid";
       const levelMatches = levels.length === 0 || levels.includes(job.level);
-      return searchable.includes(query) && isRemoteAllowed && isHybridAllowed && levelMatches;
+      const certMatches = !showCertOnly || job.hasCertification === true;
+      return searchable.includes(query) && isRemoteAllowed && isHybridAllowed && levelMatches && certMatches;
     });
 
     return [...filtered].sort((first, second) =>
       sortOrder === "Highest pay" ? second.pay.localeCompare(first.pay) : 0,
     );
-  }, [includeRemote, levels, searchQuery, showHybrid, sortOrder]);
+  }, [includeRemote, levels, searchQuery, showCertOnly, showHybrid, sortOrder]);
 
   function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -212,6 +219,7 @@ export default function Home() {
     setSearchQuery("");
     setIncludeRemote(true);
     setShowHybrid(true);
+    setShowCertOnly(false);
     setLevels(["Internship"]);
     setSortOrder("Newest");
   }
@@ -485,6 +493,16 @@ export default function Home() {
                 </div>
               </div>
 
+              <div className="border-t border-border pt-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Learning</p>
+                <div className="mt-2.5 space-y-2 text-sm text-muted-foreground">
+                  <label className="flex items-center gap-2">
+                    <input checked={showCertOnly} onChange={(e) => setShowCertOnly(e.target.checked)} type="checkbox" className="size-3.5 accent-accent" /> Certifications & webinars
+                  </label>
+                  <p className="pl-[22px] text-xs text-muted">Show roles with online learning available</p>
+                </div>
+              </div>
+
               <button onClick={clearFilters} className="w-full border-t border-border pt-4 text-left text-sm font-semibold text-accent hover:text-accent-hover">
                 Clear all
               </button>
@@ -586,6 +604,11 @@ export default function Home() {
                             <span className={`inline-flex items-center gap-1 text-xs font-semibold ${scopeColors[job.scope]}`}>
                               <Globe size={12} /> {job.scope}
                             </span>
+                            {job.hasCertification && (
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                                <GraduationCap size={12} /> Cert available
+                              </span>
+                            )}
                             <button
                               onClick={() => setSelectedRole(job.title)}
                               className="ml-auto inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accent-hover"
@@ -633,7 +656,7 @@ export default function Home() {
               {
                 icon: SlidersHorizontal,
                 title: "Refine what matters",
-                description: "Filter by work setup, level, pay, and skills to surface the right opportunities.",
+                description: "Filter by work setup, level, pay, skills, and online certifications or webinars available to surface the right opportunities.",
               },
               {
                 icon: Compass,
@@ -644,6 +667,11 @@ export default function Home() {
                 icon: Bookmark,
                 title: "Stay organized",
                 description: "Save roles and track applications as you explore your next step.",
+              },
+              {
+                icon: GraduationCap,
+                title: "Learn as you go",
+                description: "Access online certifications and webinars tied to roles so you can skill up while you search.",
               },
             ].map((step, i) => {
               const Icon = step.icon;
