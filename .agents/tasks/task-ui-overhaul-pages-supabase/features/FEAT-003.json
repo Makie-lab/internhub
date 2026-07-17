@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "feat",
   "description": "Set up Supabase client integration: install @supabase/supabase-js, create client utility, add basic database types, and prepare the project for backend connectivity.",
-  "status": "pending",
+  "status": "in_progress",
   "steps": [
     "1. Install @supabase/supabase-js via npm: `npm install @supabase/supabase-js`",
     "2. Create lib/supabase.ts (or app/lib/supabase.ts depending on Next.js convention used): Export a createClient function that reads NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY from environment variables. Include both a browser client and a server-side client helper.",
