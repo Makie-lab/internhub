@@ -1,0 +1,22 @@
+{
+  "project_type": "Next.js 16 App Router with React 19, TypeScript, Tailwind CSS v4",
+  "language": "TypeScript/TSX",
+  "build_system": "npm with Next.js CLI. Note: next.config.ts has a turbopack.root pointing to /Users/marqfiles/... which should be removed or adjusted for builds to work in this environment.",
+  "test_framework": "No test framework configured (no test files, no test dependencies in package.json)",
+  "build_command": "npm run build",
+  "test_command": "npm run lint",
+  "verification_instructions": "1. Run npm install to install dependencies. 2. Run npm run build to verify the app compiles. 3. Run npm run lint to check for lint errors.",
+  "snapshot_or_generated_files": null,
+  "setup_instructions": "cd /projects/sandbox/internhub && npm install",
+  "environment_constraints": "Open internet available. node_modules not yet installed. next.config.ts has a local turbopack.root path that may need removal for builds to succeed.",
+  "contribution_requirements": "No CONTRIBUTING.md found. Steering file says: use html, css, js, vercel, postgresql, resend, tailwind, clerk, lucide react, vercel blob, react flow. The existing stack aligns (Next.js/React with Tailwind, Lucide React).",
+  "key_patterns": "Single-page app currently in app/page.tsx (~500 lines). Uses 'use client' directive. Uses lucide-react icons, motion (framer-motion) for animations. CSS variables for theming in globals.css with Tailwind v4 @theme inline. Fonts loaded via next/font/google in layout.tsx. App Router file-based routing (app/ directory).",
+  "relevant_files": [
+    "app/page.tsx",
+    "app/layout.tsx",
+    "app/globals.css",
+    "next.config.ts",
+    "package.json"
+  ],
+  "directory_structure": "Root: package.json, next.config.ts, tsconfig.json, eslint.config.mjs, postcss.config.mjs. app/: layout.tsx, page.tsx, globals.css, favicon.ico. public/: static assets."
+}

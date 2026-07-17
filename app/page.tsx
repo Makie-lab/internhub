@@ -154,13 +154,13 @@ export default function Home() {
   const [levels, setLevels] = useState<string[]>(["Internship"]);
   const [showHybrid, setShowHybrid] = useState(true);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+    return false;
+  });
   const [showCertOnly, setShowCertOnly] = useState(false);
-
-  useEffect(() => {
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setDarkMode(prefersDark);
-  }, []);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
