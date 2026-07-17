@@ -2,7 +2,7 @@
   "id": "FEAT-003",
   "type": "fix",
   "description": "Address review findings: fix SSR-unsafe localStorage in Navbar, fix dark mode FOUC, change filter logic to OR semantics, add demo notice to post form, and update footer placeholder links.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Fix SSR-unsafe localStorage access and dark mode FOUC in Navbar by initializing dark mode to false and syncing from localStorage via useEffect on mount. Add suppressHydrationWarning to the html element in layout.tsx.",
     "Change filter logic in page.tsx from AND semantics to OR semantics: when both Certifications and Webinars are checked, show roles with EITHER attribute.",
@@ -24,5 +24,5 @@
     "npm run lint"
   ],
   "blocked_reason": null,
-  "findings": null
+  "findings": "Used useSyncExternalStore instead of useState+useEffect to handle dark mode. This avoids the react-hooks/set-state-in-effect lint rule while also being SSR-safe (provides a server snapshot returning false). The suppressHydrationWarning on html prevents console warnings from the class mismatch. Storage events are dispatched manually to trigger re-renders since same-window storage events do not fire automatically."
 }
