@@ -194,6 +194,9 @@ export default function PostPage() {
             >
               Submit opportunity <ArrowRight size={16} />
             </button>
+            <p className="mt-3 text-center text-xs text-muted">
+              This is a preview demo. Submissions are not stored or processed at this time.
+            </p>
           </motion.form>
         )}
       </section>
