@@ -5,6 +5,7 @@ import {
   BadgeCheck,
   Check,
   ChevronDown,
+  Loader2,
   Navigation,
   Pencil,
   X,
@@ -24,15 +25,59 @@ export default function GetStartedPage() {
   const [scope, setScope] = useState("Local first");
   const [profileCreated, setProfileCreated] = useState(false);
   const [editingLocation, setEditingLocation] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const formattedLocation = [city, region, country].filter(Boolean).join(", ") || "Your location";
   const profileIsEditing = !profileCreated || editingLocation;
 
-  function saveProfile(event: FormEvent<HTMLFormElement>) {
+  async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!name.trim() || !city.trim() || !country) return;
-    setProfileCreated(true);
-    setEditingLocation(false);
+
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      // Save profile via API
+      const profileRes = await fetch("/api/profiles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clerk_id: `local-${Date.now()}`,
+          full_name: name.trim(),
+          email: `${name.trim().toLowerCase().replace(/\s+/g, ".")}@placeholder.com`,
+          location_city: city.trim(),
+          location_state: region.trim() || null,
+          location_country: country,
+        }),
+      });
+
+      if (!profileRes.ok) {
+        const data = await profileRes.json();
+        throw new Error(data.error || "Failed to save profile");
+      }
+
+      // Send welcome email via API (fire-and-forget, don't block on result)
+      fetch("/api/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: `${name.trim().toLowerCase().replace(/\s+/g, ".")}@placeholder.com`,
+          name: name.trim(),
+          type: "welcome",
+        }),
+      }).catch(() => {
+        // Silently ignore email errors
+      });
+
+      setProfileCreated(true);
+      setEditingLocation(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -102,6 +147,13 @@ export default function GetStartedPage() {
                     </button>
                   )}
                 </div>
+
+                {error && (
+                  <div className="mt-4 rounded-[var(--radius-sm)] border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+                    {error}
+                  </div>
+                )}
+
                 <form className="mt-6 space-y-4" onSubmit={saveProfile}>
                   <label className="block">
                     <span className="mb-1.5 block text-sm font-medium text-foreground">Your name</span>
@@ -353,8 +405,20 @@ export default function GetStartedPage() {
                       <ChevronDown size={15} className="pointer-events-none absolute right-3 top-3 text-muted" />
                     </span>
                   </label>
-                  <button className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-accent px-4 py-3 text-sm font-semibold text-white transition hover:bg-accent-hover active:scale-[0.98]" type="submit">
-                    <Check size={16} /> {profileCreated ? "Save preferences" : "Save and continue"}
+                  <button
+                    className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-accent px-4 py-3 text-sm font-semibold text-white transition hover:bg-accent-hover active:scale-[0.98] disabled:opacity-60"
+                    type="submit"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" /> Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Check size={16} /> {profileCreated ? "Save preferences" : "Save and continue"}
+                      </>
+                    )}
                   </button>
                 </form>
               </>

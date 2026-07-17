@@ -156,6 +156,21 @@ export default function Home() {
     const existing = JSON.parse(localStorage.getItem("internhub_contact_submissions") || "[]");
     existing.push(submission);
     localStorage.setItem("internhub_contact_submissions", JSON.stringify(existing));
+
+    // Send registration email via API (fire-and-forget)
+    fetch("/api/email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: contactEmail.trim(),
+        name: contactEmail.trim().split("@")[0],
+        type: "registration",
+        data: { event_name: "InternHub Program" },
+      }),
+    }).catch(() => {
+      // Silently ignore email errors
+    });
+
     setContactSubmitted(true);
   }
 

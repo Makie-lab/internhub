@@ -4,6 +4,11 @@ import { BriefcaseBusiness, Menu, Moon, Sun, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useSyncExternalStore, useState } from "react";
+import {
+  Show,
+  UserButton,
+  SignInButton,
+} from "@clerk/nextjs";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -27,6 +32,8 @@ function getDarkModeSnapshot(): boolean {
 function getDarkModeServerSnapshot(): boolean {
   return false;
 }
+
+const isClerkConfigured = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -82,6 +89,35 @@ export default function Navbar() {
           >
             {darkMode ? <Sun size={18} /> : <Moon size={18} />}
           </button>
+
+          {/* Auth buttons */}
+          {isClerkConfigured ? (
+            <Show
+              when="signed-in"
+              fallback={
+                <SignInButton mode="modal">
+                  <button className="hidden rounded-[var(--radius-sm)] bg-accent px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-accent-hover sm:inline-flex">
+                    Sign in
+                  </button>
+                </SignInButton>
+              }
+            >
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: "size-8",
+                  },
+                }}
+              />
+            </Show>
+          ) : (
+            <Link
+              href="/get-started"
+              className="hidden rounded-[var(--radius-sm)] bg-accent px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-accent-hover sm:inline-flex"
+            >
+              Sign in
+            </Link>
+          )}
 
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
