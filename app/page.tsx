@@ -173,7 +173,11 @@ export default function Home() {
       const levelMatches = levels.length === 0 || levels.includes(job.level);
       const certMatches = !showCertOnly || job.hasCertification === true;
       const webinarMatches = !showWebinarOnly || job.hasWebinar === true;
-      return searchable.includes(query) && isRemoteAllowed && isHybridAllowed && levelMatches && certMatches && webinarMatches;
+      // When both filters are active, use OR logic (show roles with either attribute)
+      const learningMatches = (showCertOnly && showWebinarOnly)
+        ? (job.hasCertification === true || job.hasWebinar === true)
+        : (certMatches && webinarMatches);
+      return searchable.includes(query) && isRemoteAllowed && isHybridAllowed && levelMatches && learningMatches;
     });
 
     return [...filtered].sort((first, second) =>

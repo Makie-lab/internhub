@@ -1,0 +1,28 @@
+{
+  "id": "FEAT-003",
+  "type": "fix",
+  "description": "Address review findings: fix SSR-unsafe localStorage in Navbar, fix dark mode FOUC, change filter logic to OR semantics, add demo notice to post form, and update footer placeholder links.",
+  "status": "in_progress",
+  "steps": [
+    "Fix SSR-unsafe localStorage access and dark mode FOUC in Navbar by initializing dark mode to false and syncing from localStorage via useEffect on mount. Add suppressHydrationWarning to the html element in layout.tsx.",
+    "Change filter logic in page.tsx from AND semantics to OR semantics: when both Certifications and Webinars are checked, show roles with EITHER attribute.",
+    "Add a demo/preview notice to the post form page to clarify it does not actually submit data.",
+    "Update footer placeholder links to use # instead of / for Privacy, Terms, and Help center."
+  ],
+  "acceptance_criteria": [
+    "Navbar does not call localStorage during SSR - initial state is always false, synced on mount via useEffect",
+    "html element in layout.tsx has suppressHydrationWarning to prevent FOUC hydration mismatch",
+    "When both Certifications and Webinars filters are checked, roles with EITHER attribute appear (OR logic)",
+    "When only one filter is checked, only roles with that specific attribute appear",
+    "Post page has a visible note indicating it is a demo/preview",
+    "Footer placeholder links use # href",
+    "npm run build passes",
+    "npm run lint passes"
+  ],
+  "verification": [
+    "npm run build",
+    "npm run lint"
+  ],
+  "blocked_reason": null,
+  "findings": null
+}

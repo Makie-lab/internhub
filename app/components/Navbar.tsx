@@ -3,7 +3,7 @@
 import { BriefcaseBusiness, Menu, Moon, Sun, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore, useState } from "react";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -12,22 +12,39 @@ const navLinks = [
   { href: "/post", label: "Post" },
 ];
 
-function getInitialDarkMode(): boolean {
-  if (typeof window === "undefined") return false;
+function subscribeDarkMode(callback: () => void) {
+  // Listen for storage changes from other tabs
+  window.addEventListener("storage", callback);
+  return () => window.removeEventListener("storage", callback);
+}
+
+function getDarkModeSnapshot(): boolean {
   const stored = localStorage.getItem("internhub-dark");
   if (stored !== null) return stored === "true";
   return window.matchMedia("(prefers-color-scheme: dark)").matches;
 }
 
+function getDarkModeServerSnapshot(): boolean {
+  return false;
+}
+
 export default function Navbar() {
   const pathname = usePathname();
-  const [darkMode, setDarkMode] = useState(getInitialDarkMode);
+  const darkMode = useSyncExternalStore(subscribeDarkMode, getDarkModeSnapshot, getDarkModeServerSnapshot);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  useEffect(() => {
+  // Keep the DOM class in sync
+  if (typeof document !== "undefined") {
     document.documentElement.classList.toggle("dark", darkMode);
-    localStorage.setItem("internhub-dark", String(darkMode));
-  }, [darkMode]);
+  }
+
+  const toggleDarkMode = useCallback(() => {
+    const next = !getDarkModeSnapshot();
+    localStorage.setItem("internhub-dark", String(next));
+    document.documentElement.classList.toggle("dark", next);
+    // Trigger re-render by dispatching a storage event on same window
+    window.dispatchEvent(new StorageEvent("storage", { key: "internhub-dark" }));
+  }, []);
 
   function handleNavClick() {
     setMobileOpen(false);
@@ -59,7 +76,7 @@ export default function Navbar() {
 
         <div className="flex items-center gap-2 sm:gap-3">
           <button
-            onClick={() => setDarkMode(!darkMode)}
+            onClick={toggleDarkMode}
             className="rounded-[var(--radius-sm)] p-2 text-muted transition hover:bg-accent-light hover:text-foreground"
             aria-label="Toggle dark mode"
           >
