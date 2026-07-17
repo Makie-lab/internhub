@@ -20,11 +20,13 @@ import {
   Play,
   Search,
   SlidersHorizontal,
+  Star,
   Users,
   Video,
   X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 
 type Opportunity = {
@@ -136,6 +138,113 @@ const opportunities: Opportunity[] = [
     skills: ["React", "CSS", "TypeScript"],
     hasCertification: true,
   },
+  {
+    title: "Machine Learning Intern",
+    company: "OpenAI",
+    location: "San Francisco, CA",
+    nearby: "15.3 mi away",
+    pay: "$50-$60/hr",
+    type: "In person",
+    level: "Internship",
+    scope: "National",
+    icon: "O",
+    iconBg: "bg-emerald-600 text-white",
+    posted: "Posted 4h ago",
+    skills: ["Python", "PyTorch", "ML"],
+    hasCertification: true,
+    hasWebinar: true,
+  },
+  {
+    title: "DevOps Engineering Intern",
+    company: "GitLab",
+    location: "Remote, Global",
+    nearby: "Remote-friendly",
+    pay: "$35-$42/hr",
+    type: "Remote",
+    level: "Internship",
+    scope: "Global",
+    icon: "G",
+    iconBg: "bg-orange-600 text-white",
+    posted: "Posted 6h ago",
+    skills: ["Docker", "Kubernetes", "CI/CD"],
+    hasCertification: true,
+  },
+  {
+    title: "UX Research Intern",
+    company: "Figma",
+    location: "New York, NY",
+    nearby: "Hybrid venue",
+    pay: "$34-$40/hr",
+    type: "Hybrid",
+    level: "Internship",
+    scope: "National",
+    icon: "F",
+    iconBg: "bg-pink-600 text-white",
+    posted: "Posted 8h ago",
+    skills: ["User research", "Prototyping"],
+    hasWebinar: true,
+  },
+  {
+    title: "Junior Backend Developer",
+    company: "Supabase",
+    location: "Remote, United States",
+    nearby: "Remote-friendly",
+    pay: "$55k-$70k/yr",
+    type: "Remote",
+    level: "Entry level",
+    scope: "National",
+    icon: "S",
+    iconBg: "bg-green-600 text-white",
+    posted: "Posted 1d ago",
+    skills: ["PostgreSQL", "Node.js", "TypeScript"],
+    hasCertification: true,
+  },
+  {
+    title: "Content Writing Intern",
+    company: "HubSpot",
+    location: "Cambridge, MA",
+    nearby: "5.2 mi away",
+    pay: "$22-$28/hr",
+    type: "In person",
+    level: "Internship",
+    scope: "Local",
+    icon: "H",
+    iconBg: "bg-orange-500 text-white",
+    posted: "Posted 2d ago",
+    skills: ["SEO", "Copywriting", "CMS"],
+    hasWebinar: true,
+  },
+  {
+    title: "Mobile Development Intern",
+    company: "Spotify",
+    location: "Stockholm, Sweden",
+    nearby: "Remote-friendly",
+    pay: "$38-$45/hr",
+    type: "Remote",
+    level: "Internship",
+    scope: "Global",
+    icon: "S",
+    iconBg: "bg-green-500 text-white",
+    posted: "Posted 12h ago",
+    skills: ["React Native", "Swift", "Kotlin"],
+    hasCertification: true,
+    hasWebinar: true,
+  },
+  {
+    title: "Cybersecurity Analyst Intern",
+    company: "CrowdStrike",
+    location: "Austin, TX",
+    nearby: "Hybrid venue",
+    pay: "$36-$44/hr",
+    type: "Hybrid",
+    level: "Internship",
+    scope: "National",
+    icon: "C",
+    iconBg: "bg-red-600 text-white",
+    posted: "Posted 1d ago",
+    skills: ["Network security", "SIEM", "Python"],
+    hasCertification: true,
+  },
 ];
 
 const radiusOptions = ["10", "25", "50", "100"];
@@ -158,6 +267,14 @@ export default function Home() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [showCertOnly, setShowCertOnly] = useState(false);
   const [showWebinarOnly, setShowWebinarOnly] = useState(false);
+  const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [contactMessage, setContactMessage] = useState("");
+  const [contactSubmitted, setContactSubmitted] = useState(false);
+  const [salaryRange, setSalaryRange] = useState<string[]>([]);
+  const [workingHours, setWorkingHours] = useState<string[]>([]);
+  const [minRating, setMinRating] = useState(0);
 
   const formattedLocation = [city, region, country].filter(Boolean).join(", ") || "Your location";
   const profileIsEditing = !profileCreated || editingLocation;
@@ -177,13 +294,40 @@ export default function Home() {
       const learningMatches = (showCertOnly && showWebinarOnly)
         ? (job.hasCertification === true || job.hasWebinar === true)
         : (certMatches && webinarMatches);
-      return searchable.includes(query) && isRemoteAllowed && isHybridAllowed && levelMatches && learningMatches;
+
+      // Salary range filter
+      let salaryMatches = true;
+      if (salaryRange.length > 0) {
+        const payNum = parseFloat(job.pay.replace(/[^0-9.]/g, ""));
+        salaryMatches = salaryRange.some((range) => {
+          if (range === "$0-20/hr") return payNum >= 0 && payNum <= 20;
+          if (range === "$20-40/hr") return payNum > 20 && payNum <= 40;
+          if (range === "$40-60/hr") return payNum > 40 && payNum <= 60;
+          if (range === "$60+/hr") return payNum > 60;
+          return true;
+        });
+      }
+
+      // Working hours filter (maps to type for demonstration)
+      let hoursMatches = true;
+      if (workingHours.length > 0) {
+        hoursMatches = workingHours.some((hours) => {
+          if (hours === "Full-time") return job.type === "In person";
+          if (hours === "Part-time") return job.level === "Internship";
+          if (hours === "Flexible") return job.type === "Remote" || job.type === "Hybrid";
+          return true;
+        });
+      }
+
+      return searchable.includes(query) && isRemoteAllowed && isHybridAllowed && levelMatches && learningMatches && salaryMatches && hoursMatches;
     });
 
     return [...filtered].sort((first, second) =>
       sortOrder === "Highest pay" ? second.pay.localeCompare(first.pay) : 0,
     );
-  }, [includeRemote, levels, searchQuery, showCertOnly, showWebinarOnly, showHybrid, sortOrder]);
+  }, [includeRemote, levels, searchQuery, showCertOnly, showWebinarOnly, showHybrid, sortOrder, salaryRange, workingHours]);
+
+  const homepageOpportunities = visibleOpportunities.slice(0, 6);
 
   function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -221,6 +365,35 @@ export default function Home() {
     setShowWebinarOnly(false);
     setLevels(["Internship"]);
     setSortOrder("Newest");
+    setSalaryRange([]);
+    setWorkingHours([]);
+    setMinRating(0);
+  }
+
+  function toggleSalaryRange(range: string) {
+    setSalaryRange((current) =>
+      current.includes(range) ? current.filter((r) => r !== range) : [...current, range],
+    );
+  }
+
+  function toggleWorkingHours(hours: string) {
+    setWorkingHours((current) =>
+      current.includes(hours) ? current.filter((h) => h !== hours) : [...current, hours],
+    );
+  }
+
+  function openContactModal() {
+    setContactSubmitted(false);
+    setContactEmail("");
+    setContactPhone("");
+    setContactMessage("");
+    setContactModalOpen(true);
+  }
+
+  function submitContactForm(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!contactEmail.trim()) return;
+    setContactSubmitted(true);
   }
 
   return (
@@ -310,11 +483,203 @@ export default function Home() {
                     <span className="relative block">
                       <select value={country} onChange={(e) => setCountry(e.target.value)} required className="w-full appearance-none rounded-[var(--radius-sm)] border border-border bg-background px-3.5 py-2.5 text-sm text-foreground transition focus:border-accent focus:ring-2 focus:ring-accent/20">
                         <option value="" disabled>Select country</option>
-                        <option>United States</option>
-                        <option>Canada</option>
-                        <option>United Kingdom</option>
+                        <option>Afghanistan</option>
+                        <option>Albania</option>
+                        <option>Algeria</option>
+                        <option>Andorra</option>
+                        <option>Angola</option>
+                        <option>Antigua and Barbuda</option>
+                        <option>Argentina</option>
+                        <option>Armenia</option>
                         <option>Australia</option>
-                        <option>Other</option>
+                        <option>Austria</option>
+                        <option>Azerbaijan</option>
+                        <option>Bahamas</option>
+                        <option>Bahrain</option>
+                        <option>Bangladesh</option>
+                        <option>Barbados</option>
+                        <option>Belarus</option>
+                        <option>Belgium</option>
+                        <option>Belize</option>
+                        <option>Benin</option>
+                        <option>Bhutan</option>
+                        <option>Bolivia</option>
+                        <option>Bosnia and Herzegovina</option>
+                        <option>Botswana</option>
+                        <option>Brazil</option>
+                        <option>Brunei</option>
+                        <option>Bulgaria</option>
+                        <option>Burkina Faso</option>
+                        <option>Burundi</option>
+                        <option>Cabo Verde</option>
+                        <option>Cambodia</option>
+                        <option>Cameroon</option>
+                        <option>Canada</option>
+                        <option>Central African Republic</option>
+                        <option>Chad</option>
+                        <option>Chile</option>
+                        <option>China</option>
+                        <option>Colombia</option>
+                        <option>Comoros</option>
+                        <option>Congo (Democratic Republic)</option>
+                        <option>Congo (Republic)</option>
+                        <option>Costa Rica</option>
+                        <option>Croatia</option>
+                        <option>Cuba</option>
+                        <option>Cyprus</option>
+                        <option>Czech Republic</option>
+                        <option>Denmark</option>
+                        <option>Djibouti</option>
+                        <option>Dominica</option>
+                        <option>Dominican Republic</option>
+                        <option>East Timor</option>
+                        <option>Ecuador</option>
+                        <option>Egypt</option>
+                        <option>El Salvador</option>
+                        <option>Equatorial Guinea</option>
+                        <option>Eritrea</option>
+                        <option>Estonia</option>
+                        <option>Eswatini</option>
+                        <option>Ethiopia</option>
+                        <option>Fiji</option>
+                        <option>Finland</option>
+                        <option>France</option>
+                        <option>Gabon</option>
+                        <option>Gambia</option>
+                        <option>Georgia</option>
+                        <option>Germany</option>
+                        <option>Ghana</option>
+                        <option>Greece</option>
+                        <option>Grenada</option>
+                        <option>Guatemala</option>
+                        <option>Guinea</option>
+                        <option>Guinea-Bissau</option>
+                        <option>Guyana</option>
+                        <option>Haiti</option>
+                        <option>Honduras</option>
+                        <option>Hungary</option>
+                        <option>Iceland</option>
+                        <option>India</option>
+                        <option>Indonesia</option>
+                        <option>Iran</option>
+                        <option>Iraq</option>
+                        <option>Ireland</option>
+                        <option>Israel</option>
+                        <option>Italy</option>
+                        <option>Ivory Coast</option>
+                        <option>Jamaica</option>
+                        <option>Japan</option>
+                        <option>Jordan</option>
+                        <option>Kazakhstan</option>
+                        <option>Kenya</option>
+                        <option>Kiribati</option>
+                        <option>Kosovo</option>
+                        <option>Kuwait</option>
+                        <option>Kyrgyzstan</option>
+                        <option>Laos</option>
+                        <option>Latvia</option>
+                        <option>Lebanon</option>
+                        <option>Lesotho</option>
+                        <option>Liberia</option>
+                        <option>Libya</option>
+                        <option>Liechtenstein</option>
+                        <option>Lithuania</option>
+                        <option>Luxembourg</option>
+                        <option>Madagascar</option>
+                        <option>Malawi</option>
+                        <option>Malaysia</option>
+                        <option>Maldives</option>
+                        <option>Mali</option>
+                        <option>Malta</option>
+                        <option>Marshall Islands</option>
+                        <option>Mauritania</option>
+                        <option>Mauritius</option>
+                        <option>Mexico</option>
+                        <option>Micronesia</option>
+                        <option>Moldova</option>
+                        <option>Monaco</option>
+                        <option>Mongolia</option>
+                        <option>Montenegro</option>
+                        <option>Morocco</option>
+                        <option>Mozambique</option>
+                        <option>Myanmar</option>
+                        <option>Namibia</option>
+                        <option>Nauru</option>
+                        <option>Nepal</option>
+                        <option>Netherlands</option>
+                        <option>New Zealand</option>
+                        <option>Nicaragua</option>
+                        <option>Niger</option>
+                        <option>Nigeria</option>
+                        <option>North Korea</option>
+                        <option>North Macedonia</option>
+                        <option>Norway</option>
+                        <option>Oman</option>
+                        <option>Pakistan</option>
+                        <option>Palau</option>
+                        <option>Palestine</option>
+                        <option>Panama</option>
+                        <option>Papua New Guinea</option>
+                        <option>Paraguay</option>
+                        <option>Peru</option>
+                        <option>Philippines</option>
+                        <option>Poland</option>
+                        <option>Portugal</option>
+                        <option>Qatar</option>
+                        <option>Romania</option>
+                        <option>Russia</option>
+                        <option>Rwanda</option>
+                        <option>Saint Kitts and Nevis</option>
+                        <option>Saint Lucia</option>
+                        <option>Saint Vincent and the Grenadines</option>
+                        <option>Samoa</option>
+                        <option>San Marino</option>
+                        <option>Sao Tome and Principe</option>
+                        <option>Saudi Arabia</option>
+                        <option>Senegal</option>
+                        <option>Serbia</option>
+                        <option>Seychelles</option>
+                        <option>Sierra Leone</option>
+                        <option>Singapore</option>
+                        <option>Slovakia</option>
+                        <option>Slovenia</option>
+                        <option>Solomon Islands</option>
+                        <option>Somalia</option>
+                        <option>South Africa</option>
+                        <option>South Korea</option>
+                        <option>South Sudan</option>
+                        <option>Spain</option>
+                        <option>Sri Lanka</option>
+                        <option>Sudan</option>
+                        <option>Suriname</option>
+                        <option>Sweden</option>
+                        <option>Switzerland</option>
+                        <option>Syria</option>
+                        <option>Taiwan</option>
+                        <option>Tajikistan</option>
+                        <option>Tanzania</option>
+                        <option>Thailand</option>
+                        <option>Togo</option>
+                        <option>Tonga</option>
+                        <option>Trinidad and Tobago</option>
+                        <option>Tunisia</option>
+                        <option>Turkey</option>
+                        <option>Turkmenistan</option>
+                        <option>Tuvalu</option>
+                        <option>Uganda</option>
+                        <option>Ukraine</option>
+                        <option>United Arab Emirates</option>
+                        <option>United Kingdom</option>
+                        <option>United States</option>
+                        <option>Uruguay</option>
+                        <option>Uzbekistan</option>
+                        <option>Vanuatu</option>
+                        <option>Vatican City</option>
+                        <option>Venezuela</option>
+                        <option>Vietnam</option>
+                        <option>Yemen</option>
+                        <option>Zambia</option>
+                        <option>Zimbabwe</option>
                       </select>
                       <ChevronDown size={15} className="pointer-events-none absolute right-3 top-3 text-muted" />
                     </span>
@@ -471,6 +836,48 @@ export default function Home() {
                 </div>
               </div>
 
+              <div className="border-t border-border pt-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Salary Range</p>
+                <div className="mt-2.5 space-y-2 text-sm text-muted-foreground">
+                  {["$0-20/hr", "$20-40/hr", "$40-60/hr", "$60+/hr"].map((range) => (
+                    <label key={range} className="flex items-center gap-2">
+                      <input checked={salaryRange.includes(range)} onChange={() => toggleSalaryRange(range)} type="checkbox" className="size-3.5 accent-accent" /> {range}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-border pt-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Working Hours</p>
+                <div className="mt-2.5 space-y-2 text-sm text-muted-foreground">
+                  {["Full-time", "Part-time", "Flexible"].map((hours) => (
+                    <label key={hours} className="flex items-center gap-2">
+                      <input checked={workingHours.includes(hours)} onChange={() => toggleWorkingHours(hours)} type="checkbox" className="size-3.5 accent-accent" /> {hours}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-border pt-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Rating</p>
+                <div className="mt-2.5 flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setMinRating(minRating === star ? 0 : star)}
+                      className={`rounded p-0.5 transition ${star <= minRating ? "text-amber-500" : "text-muted hover:text-amber-400"}`}
+                      aria-label={`${star} star${star > 1 ? "s" : ""}`}
+                    >
+                      <Star size={18} fill={star <= minRating ? "currentColor" : "none"} />
+                    </button>
+                  ))}
+                  {minRating > 0 && (
+                    <span className="ml-2 text-xs text-muted">{minRating}+ stars</span>
+                  )}
+                </div>
+              </div>
+
               <button onClick={clearFilters} className="w-full border-t border-border pt-4 text-left text-sm font-semibold text-accent hover:text-accent-hover">
                 Clear all
               </button>
@@ -499,7 +906,7 @@ export default function Home() {
             </div>
 
             <div className="mb-4 flex items-center justify-between px-0.5 text-sm text-muted">
-              <p><strong className="text-foreground">{visibleOpportunities.length}</strong> matches</p>
+              <p><strong className="text-foreground">{visibleOpportunities.length}</strong> matches {visibleOpportunities.length > 6 && <span>(showing 6)</span>}</p>
               {profileCreated && (
                 <p className="hidden items-center gap-1.5 text-accent sm:flex">
                   <Navigation size={14} /> Location active
@@ -508,13 +915,14 @@ export default function Home() {
             </div>
 
             <div className="space-y-3">
-              {visibleOpportunities.length > 0 ? (
-                visibleOpportunities.map((job, index) => {
+              {homepageOpportunities.length > 0 ? (
+                <>
+                  {homepageOpportunities.map((job, index) => {
                   const isSaved = savedJobs.includes(job.title);
                   const typeColors: Record<string, string> = {
-                    Remote: "bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300",
-                    "In person": "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-                    Hybrid: "bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300",
+                    Remote: "bg-violet-100 text-black dark:bg-violet-900/40 dark:text-black",
+                    "In person": "bg-blue-100 text-black dark:bg-blue-900/40 dark:text-black",
+                    Hybrid: "bg-teal-100 text-black dark:bg-teal-900/40 dark:text-black",
                   };
                   const scopeColors: Record<string, string> = {
                     Local: "text-emerald-600 dark:text-emerald-400",
@@ -593,7 +1001,18 @@ export default function Home() {
                       </div>
                     </motion.article>
                   );
-                })
+                })}
+                  {visibleOpportunities.length > 6 && (
+                    <div className="mt-4 text-center">
+                      <Link
+                        href="/opportunities"
+                        className="inline-flex items-center gap-2 rounded-[var(--radius-sm)] bg-accent px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-accent-hover active:scale-[0.98]"
+                      >
+                        View all opportunities <ArrowRight size={15} />
+                      </Link>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="rounded-[var(--radius)] border border-dashed border-border bg-surface px-6 py-14 text-center">
                   <Search size={20} className="mx-auto text-muted" />
@@ -619,7 +1038,7 @@ export default function Home() {
             Set your preferences once, then let the platform work for you.
           </p>
 
-          <div className="mt-12 grid gap-px overflow-hidden rounded-[var(--radius)] border border-border bg-border md:grid-cols-2">
+          <div className="mt-12 flex flex-wrap justify-center gap-[5px]">
             {[
               {
                 icon: MapPin,
@@ -655,7 +1074,7 @@ export default function Home() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.3 }}
                   transition={{ duration: 0.4, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] }}
-                  className="bg-surface p-7 sm:p-8"
+                  className="w-[calc(50%-3px)] rounded-[var(--radius)] border border-border bg-surface p-7 sm:p-8 md:w-[calc(50%-3px)]"
                 >
                   <div className="flex size-10 items-center justify-center rounded-[var(--radius-sm)] bg-accent-light text-accent">
                     <Icon size={19} />
@@ -755,7 +1174,7 @@ export default function Home() {
                       <span className="inline-flex items-center gap-1.5 text-xs text-muted">
                         <Users size={13} /> {webinar.attendees} registered
                       </span>
-                      <button className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition hover:text-accent-hover">
+                      <button onClick={openContactModal} className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition hover:text-accent-hover">
                         Register <ArrowRight size={14} />
                       </button>
                     </div>
@@ -858,7 +1277,7 @@ export default function Home() {
                       </div>
                       <div className="mt-3.5 flex items-center justify-between">
                         <span className="text-xs text-muted">{cert.enrolled.toLocaleString()} enrolled</span>
-                        <button className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition hover:text-accent-hover">
+                        <button onClick={openContactModal} className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition hover:text-accent-hover">
                           Enroll <ArrowRight size={14} />
                         </button>
                       </div>
@@ -870,6 +1289,86 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Contact Form Modal */}
+      <AnimatePresence>
+        {contactModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+            onClick={() => setContactModalOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full max-w-md rounded-[var(--radius)] border border-border bg-surface-elevated p-6 shadow-xl sm:p-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-bold tracking-tight text-foreground">Contact Information</h2>
+                  <p className="mt-1.5 text-sm text-muted">Fill in your details to register or enroll.</p>
+                </div>
+                <button onClick={() => setContactModalOpen(false)} aria-label="Close" className="rounded-[var(--radius-xs)] p-1.5 text-muted transition hover:bg-accent-light hover:text-foreground">
+                  <X size={18} />
+                </button>
+              </div>
+
+              {contactSubmitted ? (
+                <div className="mt-6 rounded-[var(--radius-sm)] border border-emerald-200 bg-emerald-50 p-5 text-center dark:border-emerald-800 dark:bg-emerald-900/20">
+                  <Check size={24} className="mx-auto text-emerald-600 dark:text-emerald-400" />
+                  <h3 className="mt-3 font-bold text-foreground">Submitted successfully!</h3>
+                  <p className="mt-1 text-sm text-muted">We will reach out to you shortly.</p>
+                  <button onClick={() => setContactModalOpen(false)} className="mt-4 text-sm font-semibold text-accent hover:text-accent-hover">
+                    Close
+                  </button>
+                </div>
+              ) : (
+                <form className="mt-6 space-y-4" onSubmit={submitContactForm}>
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm font-medium text-foreground">Email / Gmail</span>
+                    <input
+                      value={contactEmail}
+                      onChange={(e) => setContactEmail(e.target.value)}
+                      required
+                      type="email"
+                      placeholder="you@example.com"
+                      className="w-full rounded-[var(--radius-sm)] border border-border bg-background px-3.5 py-2.5 text-sm text-foreground transition placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm font-medium text-foreground">Phone number</span>
+                    <input
+                      value={contactPhone}
+                      onChange={(e) => setContactPhone(e.target.value)}
+                      type="tel"
+                      placeholder="+1 (555) 000-0000"
+                      className="w-full rounded-[var(--radius-sm)] border border-border bg-background px-3.5 py-2.5 text-sm text-foreground transition placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm font-medium text-foreground">Additional information</span>
+                    <textarea
+                      value={contactMessage}
+                      onChange={(e) => setContactMessage(e.target.value)}
+                      rows={3}
+                      placeholder="Any additional details or questions..."
+                      className="w-full rounded-[var(--radius-sm)] border border-border bg-background px-3.5 py-2.5 text-sm text-foreground transition placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
+                    />
+                  </label>
+                  <button className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-accent px-4 py-3 text-sm font-semibold text-white transition hover:bg-accent-hover active:scale-[0.98]" type="submit">
+                    <Check size={16} /> Submit
+                  </button>
+                </form>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </main>
   );
