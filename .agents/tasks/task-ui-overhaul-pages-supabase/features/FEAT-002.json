@@ -1,0 +1,26 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Create new pages: /get-started (dedicated profile/user creation hero page), /opportunities (full opportunity browsing page with all listings), and /mail (page to link mail apps like Gmail, Outlook, etc.).",
+  "status": "pending",
+  "steps": [
+    "1. Create app/get-started/page.tsx: A dedicated hero page that contains ONLY the profile/user creation form (extracted from the homepage hero section). It should have a clean hero layout with the profile creation card (name, city, state, country with all countries, commute radius, search scope). Remove the profile creation card from the homepage hero section. The homepage hero should only show the tagline and CTA buttons (one linking to /get-started, the other to #opportunities).",
+    "2. Create app/opportunities/page.tsx: A full-page opportunity browser that shows ALL opportunities (12+ from the expanded array). Include the same filter sidebar as homepage (Location, Level, Learning, Salary Range, Working Hours, Rating), search bar, sort options. Import or share the opportunities data. This page should be a more comprehensive browsing experience than the homepage section.",
+    "3. Create app/mail/page.tsx: A page where users can link their mail apps. Show options for Gmail, Outlook, Yahoo Mail, Apple Mail, and other providers. Each should have a 'Connect' button. This is a UI-only page for now (no actual OAuth integration) but should look polished and functional with proper icons and descriptions for each mail provider.",
+    "4. Update the homepage hero section: Remove the profile creation card from the right side of the hero. Replace it with a visually appealing illustration or feature highlights card. Update the 'Find my matches' CTA to link to /get-started instead of scrolling to the profile form.",
+    "5. In the homepage opportunities section, add a prominent 'View all opportunities' link/button that navigates to /opportunities."
+  ],
+  "acceptance_criteria": [
+    "/get-started page renders with the full profile creation form (name, city, state, country, radius, scope)",
+    "/opportunities page shows all 12+ opportunities with full filter sidebar",
+    "/mail page shows mail provider options (Gmail, Outlook, Yahoo, Apple Mail) with Connect buttons",
+    "Homepage hero no longer contains the profile creation card",
+    "Homepage hero has CTA linking to /get-started",
+    "Homepage opportunities section has a 'View all opportunities' link to /opportunities",
+    "npm run build passes with all new routes",
+    "npm run lint passes"
+  ],
+  "verification": ["Run `npm run build` and confirm /get-started, /opportunities, and /mail routes are generated", "Run `npm run lint` and confirm no lint errors"],
+  "blocked_reason": null,
+  "findings": ""
+}

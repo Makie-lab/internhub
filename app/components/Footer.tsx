@@ -15,7 +15,6 @@ export default function Footer() {
           <Link href="#" className="hover:text-foreground">Privacy</Link>
           <Link href="#" className="hover:text-foreground">Terms</Link>
           <Link href="#" className="hover:text-foreground">Help center</Link>
-          <Link href="/for-employees" className="hover:text-foreground">For employers</Link>
         </div>
         <p className="text-muted">2026 InternHub</p>
       </div>

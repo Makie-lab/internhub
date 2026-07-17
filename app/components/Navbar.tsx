@@ -7,9 +7,9 @@ import { useCallback, useSyncExternalStore, useState } from "react";
 
 const navLinks = [
   { href: "/", label: "Home" },
-  { href: "/for-employees", label: "For Employees" },
-  { href: "/for-students", label: "For Students" },
+  { href: "/opportunities", label: "Opportunities" },
   { href: "/post", label: "Post" },
+  { href: "/mail", label: "Mail" },
 ];
 
 function subscribeDarkMode(callback: () => void) {
