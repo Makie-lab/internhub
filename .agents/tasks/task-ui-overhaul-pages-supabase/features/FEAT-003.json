@@ -1,0 +1,24 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Set up Supabase client integration: install @supabase/supabase-js, create client utility, add basic database types, and prepare the project for backend connectivity.",
+  "status": "completed",
+  "steps": [
+    "1. Install @supabase/supabase-js via npm: `npm install @supabase/supabase-js`",
+    "2. Create lib/supabase.ts (or app/lib/supabase.ts depending on Next.js convention used): Export a createClient function that reads NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY from environment variables. Include both a browser client and a server-side client helper.",
+    "3. Create lib/types/database.ts: Define TypeScript types for the core database tables (listings, applications, profiles) matching the schema from prd.md.",
+    "4. Create a .env.local.example file documenting required environment variables: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY.",
+    "5. Update next.config.ts if needed to allow Supabase domains in images or other config."
+  ],
+  "acceptance_criteria": [
+    "@supabase/supabase-js is in package.json dependencies",
+    "lib/supabase.ts exports a working createClient function",
+    "lib/types/database.ts defines types for listings, applications, profiles tables",
+    ".env.local.example documents required Supabase environment variables",
+    "npm run build passes (Supabase client should not break build even without env vars - use conditional checks)",
+    "npm run lint passes"
+  ],
+  "verification": ["Run `npm run build` to confirm build still passes", "Run `npm run lint` to confirm no lint errors"],
+  "blocked_reason": null,
+  "findings": "Had to add !.env.local.example to .gitignore since the existing .env* pattern was catching the example file. next.config.ts was left unchanged as it does not need Supabase-specific image domain config at this stage (no image fetching from Supabase yet). Build and lint both pass without env vars set."
+}

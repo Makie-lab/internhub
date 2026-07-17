@@ -1,0 +1,36 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Restructure the single-page app into multi-page routing, create a shared layout with a new navbar (Home, For Employees, For Students, Post), add a second Google font for headings on the homepage, and separate the Certifications and Webinars filter checkboxes.",
+  "status": "completed",
+  "steps": [
+    "In app/layout.tsx, add a second Google font (e.g., Playfair Display or DM Serif Display) for headings/display text. Export its CSS variable alongside the existing Geist fonts. Add the variable class to the html element.",
+    "In app/globals.css, add a --font-display CSS variable referencing the new font, and add it to the @theme inline block so Tailwind can use it (e.g., --font-display).",
+    "Create a shared Navbar component at app/components/Navbar.tsx. It should contain the InternHub logo and the nav links: Home (/), For Employees (/for-employees), For Students (/for-students), Post (/post). Include the dark mode toggle button and profile/location buttons. Use Next.js Link component for navigation. Include mobile-responsive behavior.",
+    "Create a shared Footer component at app/components/Footer.tsx extracted from the current footer in page.tsx.",
+    "Refactor app/page.tsx (the homepage): Remove the header and footer (now in layout/components). Keep the Hero, Opportunities, How it works, and Webinars & Certifications sections. Use the new display font for the hero heading (h1) and section headings (h2s) by applying a font-display class. In the sidebar filters under the 'Learning' section, replace the single 'Certifications & webinars' checkbox with two separate checkboxes: 'Certifications' and 'Webinars'. Add state for each (showCertOnly, showWebinarOnly) and update the filtering logic accordingly. Add a hasWebinar property to the Opportunity type and mark some opportunities with it.",
+    "Update app/layout.tsx to include the Navbar and Footer components so they appear on every page.",
+    "Create app/for-employees/page.tsx: A dedicated page for employers. Include a hero section explaining what InternHub offers to employers (post opportunities, find talent, etc.). Use placeholder content with the new display font for headings.",
+    "Create app/for-students/page.tsx: A dedicated page for students. Include content about how students can benefit (find internships, learn skills, get certifications). Use the display font for headings.",
+    "Create app/post/page.tsx: A page for posting opportunities. Include a form-like layout (placeholder/mockup) for employers to submit new roles. Use the display font for headings.",
+    "Ensure the dark mode toggle state is managed properly across pages. Move it to a shared context or keep it in the Navbar with useEffect on document.documentElement like the current implementation."
+  ],
+  "acceptance_criteria": [
+    "Navigating to / shows the homepage with Hero, Opportunities, How it works, Webinars & Certifications sections",
+    "Navigating to /for-employees shows a dedicated employer-focused page",
+    "Navigating to /for-students shows a dedicated student-focused page",
+    "Navigating to /post shows a job posting page",
+    "The navbar displays Home, For Employees, For Students, Post links on all pages",
+    "The homepage hero heading (h1) and section headings use the new display/serif font, while body text uses Geist",
+    "The sidebar filters show separate 'Certifications' and 'Webinars' checkboxes instead of a single combined one",
+    "Each filter checkbox independently filters the opportunities list",
+    "Dark mode toggle works across all pages",
+    "npm run build completes successfully"
+  ],
+  "verification": [
+    "npm run build",
+    "npm run lint"
+  ],
+  "blocked_reason": null,
+  "findings": "React 19 eslint rules (react-hooks/set-state-in-effect and react-hooks/refs) are strict - cannot call setState inside useEffect or access refs during render. Used lazy initializer for useState and onClick handlers instead. Tailwind v4 @theme inline uses --font-display referencing --font-playfair (the next/font CSS variable) to avoid circular reference."
+}

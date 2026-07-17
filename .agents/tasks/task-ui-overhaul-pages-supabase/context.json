@@ -1,0 +1,26 @@
+{
+  "project_type": "Next.js 16.2.4 web application with React 19, TypeScript, Tailwind CSS v4",
+  "language": "TypeScript / TSX",
+  "build_system": "npm with Next.js CLI",
+  "test_framework": "No test framework currently configured",
+  "build_command": "npm run build",
+  "test_command": "npm run lint",
+  "verification_instructions": "Run `npm run build` to confirm static generation of all pages. Run `npm run lint` to confirm no lint errors.",
+  "snapshot_or_generated_files": null,
+  "setup_instructions": "cd /projects/sandbox/internhub && npm install",
+  "environment_constraints": "Open internet - can install npm packages freely. No Docker setup. No test runner installed.",
+  "contribution_requirements": "Work on branch enhance/multipage-ui-navbar-fonts-filters. Commit changes with descriptive messages.",
+  "key_patterns": "- All pages use 'use client' directive with motion/react animations\n- Layout in app/layout.tsx wraps all pages with Navbar and Footer\n- CSS variables defined in app/globals.css with @theme inline for Tailwind v4\n- Icons from lucide-react\n- Styling uses custom CSS variables (--radius, --accent, --surface, etc.)\n- Font: Geist Sans (body), Playfair Display (display headings)\n- Dark mode via .dark class with CSS variable overrides",
+  "relevant_files": [
+    "app/page.tsx",
+    "app/components/Navbar.tsx",
+    "app/components/Footer.tsx",
+    "app/layout.tsx",
+    "app/globals.css",
+    "app/post/page.tsx",
+    "app/for-employees/page.tsx",
+    "app/for-students/page.tsx",
+    "package.json"
+  ],
+  "directory_structure": "app/ - Next.js app router directory\n  components/ - Shared components (Navbar.tsx, Footer.tsx)\n  for-employees/ - page to be REMOVED\n  for-students/ - page to be REMOVED\n  post/ - Post opportunity page (keep)\n  layout.tsx - Root layout with fonts and Navbar/Footer\n  page.tsx - Main homepage (~500 lines) with hero, profile form, opportunities, how-it-works, webinars/certs\n  globals.css - CSS variables and Tailwind theme"
+}

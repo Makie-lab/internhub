@@ -1,0 +1,22 @@
+{
+  "id": "FEAT-001",
+  "type": "chore",
+  "description": "Install dependencies and fix build configuration so the project compiles successfully in this environment.",
+  "status": "completed",
+  "steps": [
+    "Run npm install in /projects/sandbox/internhub to restore node_modules",
+    "Fix next.config.ts by removing the turbopack.root property that points to a local path (/Users/marqfiles/...) which does not exist in this environment",
+    "Run npm run build to confirm the project compiles cleanly",
+    "Run npm run lint to confirm no lint errors"
+  ],
+  "acceptance_criteria": [
+    "npm run build completes successfully with exit code 0",
+    "npm run lint completes without errors"
+  ],
+  "verification": [
+    "npm run build",
+    "npm run lint"
+  ],
+  "blocked_reason": null,
+  "findings": "Node.js was not pre-installed. Used mise with MISE_NODE_VERIFY=false to install node@20. Had to fix a lint error (react-hooks/set-state-in-effect) in app/page.tsx by converting the useEffect+setState pattern to a lazy useState initializer. Both build and lint now pass cleanly."
+}

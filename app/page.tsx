@@ -15,138 +15,21 @@ import {
   Globe,
   GraduationCap,
   MapPin,
-  Moon,
-  Navigation,
-  Pencil,
   Play,
   Search,
   SlidersHorizontal,
-  Sun,
+  TrendingUp,
   Users,
   Video,
   X,
+  Zap,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { FormEvent, useMemo, useState, useEffect } from "react";
-
-type Opportunity = {
-  title: string;
-  company: string;
-  location: string;
-  nearby: string;
-  pay: string;
-  type: "Remote" | "Hybrid" | "In person";
-  level: "Internship" | "Entry level";
-  scope: "Local" | "National" | "Global";
-  icon: string;
-  iconBg: string;
-  posted: string;
-  skills: string[];
-  hasCertification?: boolean;
-};
-
-const opportunities: Opportunity[] = [
-  {
-    title: "Product Design Intern",
-    company: "Vercel",
-    location: "Remote, United States",
-    nearby: "Remote-friendly",
-    pay: "$32-$38/hr",
-    type: "Remote",
-    level: "Internship",
-    scope: "National",
-    icon: "V",
-    iconBg: "bg-black dark:bg-white dark:text-black text-white",
-    posted: "Posted today",
-    skills: ["Product design", "Figma"],
-    hasCertification: true,
-  },
-  {
-    title: "Data Analytics Intern",
-    company: "Capital One",
-    location: "Richmond, VA",
-    nearby: "8.4 mi away",
-    pay: "$28-$34/hr",
-    type: "In person",
-    level: "Internship",
-    scope: "Local",
-    icon: "C",
-    iconBg: "bg-blue-700 text-white",
-    posted: "Posted 2h ago",
-    skills: ["SQL", "Tableau"],
-  },
-  {
-    title: "Software Engineering Intern",
-    company: "Notion",
-    location: "New York, NY",
-    nearby: "Hybrid venue",
-    pay: "$36-$42/hr",
-    type: "Hybrid",
-    level: "Internship",
-    scope: "National",
-    icon: "N",
-    iconBg: "bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900",
-    posted: "Posted yesterday",
-    skills: ["TypeScript", "React"],
-    hasCertification: true,
-  },
-  {
-    title: "Junior Customer Success Associate",
-    company: "Webflow",
-    location: "San Francisco, CA",
-    nearby: "Hybrid venue",
-    pay: "$64k-$76k/yr",
-    type: "Hybrid",
-    level: "Entry level",
-    scope: "National",
-    icon: "W",
-    iconBg: "bg-blue-600 text-white",
-    posted: "Posted 1d ago",
-    skills: ["Customer success", "SaaS"],
-  },
-  {
-    title: "Marketing Coordinator Intern",
-    company: "Stripe",
-    location: "Remote, Global",
-    nearby: "Remote-friendly",
-    pay: "$30-$36/hr",
-    type: "Remote",
-    level: "Internship",
-    scope: "Global",
-    icon: "S",
-    iconBg: "bg-indigo-600 text-white",
-    posted: "Posted 3h ago",
-    skills: ["Content strategy", "Analytics"],
-    hasCertification: true,
-  },
-  {
-    title: "Frontend Engineering Intern",
-    company: "Linear",
-    location: "San Francisco, CA",
-    nearby: "12.1 mi away",
-    pay: "$40-$48/hr",
-    type: "In person",
-    level: "Internship",
-    scope: "National",
-    icon: "L",
-    iconBg: "bg-violet-600 text-white",
-    posted: "Posted 5h ago",
-    skills: ["React", "CSS", "TypeScript"],
-    hasCertification: true,
-  },
-];
-
-const radiusOptions = ["10", "25", "50", "100"];
+import Link from "next/link";
+import { FormEvent, useMemo, useState } from "react";
+import { opportunities, parsePayToHourly } from "@/lib/data/opportunities";
 
 export default function Home() {
-  const [name, setName] = useState("");
-  const [city, setCity] = useState("");
-  const [region, setRegion] = useState("");
-  const [country, setCountry] = useState("");
-  const [radius, setRadius] = useState("25");
-  const [scope, setScope] = useState("Local first");
-  const [profileCreated, setProfileCreated] = useState(false);
-  const [editingLocation, setEditingLocation] = useState(false);
   const [savedJobs, setSavedJobs] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<"Newest" | "Highest pay">("Newest");
@@ -154,20 +37,15 @@ export default function Home() {
   const [levels, setLevels] = useState<string[]>(["Internship"]);
   const [showHybrid, setShowHybrid] = useState(true);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  const [darkMode, setDarkMode] = useState(false);
   const [showCertOnly, setShowCertOnly] = useState(false);
-
-  useEffect(() => {
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setDarkMode(prefersDark);
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
-  }, [darkMode]);
-
-  const formattedLocation = [city, region, country].filter(Boolean).join(", ") || "Your location";
-  const profileIsEditing = !profileCreated || editingLocation;
+  const [showWebinarOnly, setShowWebinarOnly] = useState(false);
+  const [salaryRange, setSalaryRange] = useState<string[]>([]);
+  const [workingHours, setWorkingHours] = useState<string[]>([]);
+  const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [contactMessage, setContactMessage] = useState("");
+  const [contactSubmitted, setContactSubmitted] = useState(false);
 
   const visibleOpportunities = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -179,20 +57,45 @@ export default function Home() {
       const isHybridAllowed = showHybrid || job.type !== "Hybrid";
       const levelMatches = levels.length === 0 || levels.includes(job.level);
       const certMatches = !showCertOnly || job.hasCertification === true;
-      return searchable.includes(query) && isRemoteAllowed && isHybridAllowed && levelMatches && certMatches;
+      const webinarMatches = !showWebinarOnly || job.hasWebinar === true;
+      // When both filters are active, use OR logic (show roles with either attribute)
+      const learningMatches = (showCertOnly && showWebinarOnly)
+        ? (job.hasCertification === true || job.hasWebinar === true)
+        : (certMatches && webinarMatches);
+
+      // Salary range filter
+      let salaryMatches = true;
+      if (salaryRange.length > 0) {
+        const hourlyRate = parsePayToHourly(job.pay);
+        salaryMatches = salaryRange.some((range) => {
+          if (range === "$0-20/hr") return hourlyRate >= 0 && hourlyRate <= 20;
+          if (range === "$20-40/hr") return hourlyRate > 20 && hourlyRate <= 40;
+          if (range === "$40-60/hr") return hourlyRate > 40 && hourlyRate <= 60;
+          if (range === "$60+/hr") return hourlyRate > 60;
+          return true;
+        });
+      }
+
+      // Work arrangement filter
+      let hoursMatches = true;
+      if (workingHours.length > 0) {
+        hoursMatches = workingHours.some((hours) => {
+          if (hours === "On-site only") return job.type === "In person";
+          if (hours === "Remote") return job.type === "Remote";
+          if (hours === "Hybrid") return job.type === "Hybrid";
+          return true;
+        });
+      }
+
+      return searchable.includes(query) && isRemoteAllowed && isHybridAllowed && levelMatches && learningMatches && salaryMatches && hoursMatches;
     });
 
     return [...filtered].sort((first, second) =>
-      sortOrder === "Highest pay" ? second.pay.localeCompare(first.pay) : 0,
+      sortOrder === "Highest pay" ? parsePayToHourly(second.pay) - parsePayToHourly(first.pay) : 0,
     );
-  }, [includeRemote, levels, searchQuery, showCertOnly, showHybrid, sortOrder]);
+  }, [includeRemote, levels, searchQuery, showCertOnly, showWebinarOnly, showHybrid, sortOrder, salaryRange, workingHours]);
 
-  function saveProfile(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!name.trim() || !city.trim() || !country) return;
-    setProfileCreated(true);
-    setEditingLocation(false);
-  }
+  const homepageOpportunities = visibleOpportunities.slice(0, 6);
 
   function toggleSave(title: string) {
     setSavedJobs((current) =>
@@ -208,59 +111,56 @@ export default function Home() {
     );
   }
 
-  function openLocationEditor() {
-    setEditingLocation(true);
-    window.setTimeout(() => {
-      document.getElementById("location-preferences")?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 0);
-  }
-
   function clearFilters() {
     setSearchQuery("");
     setIncludeRemote(true);
     setShowHybrid(true);
     setShowCertOnly(false);
+    setShowWebinarOnly(false);
     setLevels(["Internship"]);
     setSortOrder("Newest");
+    setSalaryRange([]);
+    setWorkingHours([]);
+  }
+
+  function toggleSalaryRange(range: string) {
+    setSalaryRange((current) =>
+      current.includes(range) ? current.filter((r) => r !== range) : [...current, range],
+    );
+  }
+
+  function toggleWorkingHours(hours: string) {
+    setWorkingHours((current) =>
+      current.includes(hours) ? current.filter((h) => h !== hours) : [...current, hours],
+    );
+  }
+
+  function openContactModal() {
+    setContactSubmitted(false);
+    setContactEmail("");
+    setContactPhone("");
+    setContactMessage("");
+    setContactModalOpen(true);
+  }
+
+  function submitContactForm(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!contactEmail.trim()) return;
+    // Persist submission to localStorage
+    const submission = {
+      email: contactEmail.trim(),
+      phone: contactPhone.trim(),
+      message: contactMessage.trim(),
+      submittedAt: new Date().toISOString(),
+    };
+    const existing = JSON.parse(localStorage.getItem("internhub_contact_submissions") || "[]");
+    existing.push(submission);
+    localStorage.setItem("internhub_contact_submissions", JSON.stringify(existing));
+    setContactSubmitted(true);
   }
 
   return (
     <main className="min-h-[100dvh] overflow-hidden bg-background text-foreground">
-      {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-border bg-surface/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
-          <a className="flex shrink-0 items-center gap-2.5" href="#top" aria-label="InternHub home">
-            <span className="flex size-9 items-center justify-center rounded-[var(--radius-sm)] bg-accent text-white">
-              <BriefcaseBusiness size={18} strokeWidth={2.2} />
-            </span>
-            <span className="text-base font-bold tracking-tight text-foreground">internhub</span>
-          </a>
-          <nav className="hidden items-center gap-6 text-sm font-medium text-muted md:flex">
-            <a className="text-foreground" href="#opportunities">Find opportunities</a>
-            <a className="transition hover:text-foreground" href="#learn">Learn</a>
-            <a className="transition hover:text-foreground" href="#how-it-works">How it works</a>
-            <a className="transition hover:text-foreground" href="#employers">For employers</a>
-          </nav>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className="rounded-[var(--radius-sm)] p-2 text-muted transition hover:bg-accent-light hover:text-foreground"
-              aria-label="Toggle dark mode"
-            >
-              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-            {profileCreated && (
-              <button onClick={openLocationEditor} className="hidden items-center gap-1.5 rounded-[var(--radius-sm)] border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:border-border-hover sm:inline-flex">
-                <MapPin size={13} className="text-accent" /> {city || "Location"}
-              </button>
-            )}
-            <button onClick={openLocationEditor} className="rounded-[var(--radius-sm)] bg-accent px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-accent-hover active:scale-[0.98]">
-              {profileCreated ? "Edit profile" : "Get started"}
-            </button>
-          </div>
-        </div>
-      </header>
-
       {/* Hero */}
       <section id="top" className="relative border-b border-border bg-surface">
         <div className="pointer-events-none absolute -left-40 -top-40 size-[480px] rounded-full bg-accent/5 blur-3xl" />
@@ -273,19 +173,19 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
-            <h1 className="text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-5xl lg:text-[3.25rem]">
+            <h1 className="font-display text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-5xl lg:text-[3.25rem]">
               Opportunities that meet you where you are.
             </h1>
             <p className="mt-5 max-w-lg text-base leading-relaxed text-muted">
               Find internships and early-career roles with transparent pay, flexible setups, and location-aware details.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <button
-                onClick={openLocationEditor}
+              <Link
+                href="/get-started"
                 className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-hover active:scale-[0.98]"
               >
-                {profileCreated ? "Update preferences" : "Find my matches"} <ArrowRight size={16} />
-              </button>
+                Find my matches <ArrowRight size={16} />
+              </Link>
               <a
                 href="#opportunities"
                 className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-border bg-surface px-5 py-3 text-sm font-semibold text-foreground transition hover:border-border-hover hover:bg-accent-light"
@@ -300,144 +200,78 @@ export default function Home() {
             </div>
           </motion.div>
 
-          {/* Profile / Location Card */}
-          <motion.section
-            id="location-preferences"
+          {/* Feature Highlights Card */}
+          <motion.div
             className="rounded-[var(--radius)] border border-border bg-surface-elevated p-5 shadow-[var(--card-shadow)] sm:p-7"
-            aria-labelledby="location-title"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
-            {profileIsEditing ? (
-              <>
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h2 id="location-title" className="text-xl font-bold tracking-tight">
-                      {profileCreated ? "Update your location" : "Create your profile"}
-                    </h2>
-                    <p className="mt-1.5 text-sm leading-relaxed text-muted">
-                      We use this to rank nearby venues and calculate distances.
-                    </p>
-                  </div>
-                  {profileCreated && (
-                    <button onClick={() => setEditingLocation(false)} aria-label="Close" className="rounded-[var(--radius-xs)] p-1.5 text-muted transition hover:bg-accent-light hover:text-foreground">
-                      <X size={18} />
-                    </button>
-                  )}
+            <h2 className="text-xl font-bold tracking-tight text-foreground">Why InternHub?</h2>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted">Everything you need to land your first role.</p>
+
+            <div className="mt-6 space-y-4">
+              <div className="flex items-start gap-3 rounded-[var(--radius-sm)] border border-border bg-background p-4">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-accent-light text-accent">
+                  <TrendingUp size={17} />
                 </div>
-                <form className="mt-6 space-y-4" onSubmit={saveProfile}>
-                  <label className="block">
-                    <span className="mb-1.5 block text-sm font-medium text-foreground">Your name</span>
-                    <input value={name} onChange={(e) => setName(e.target.value)} required placeholder="e.g. Jordan Lee" className="w-full rounded-[var(--radius-sm)] border border-border bg-background px-3.5 py-2.5 text-sm text-foreground transition placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20" />
-                  </label>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="block">
-                      <span className="mb-1.5 block text-sm font-medium text-foreground">City</span>
-                      <input value={city} onChange={(e) => setCity(e.target.value)} required placeholder="e.g. Richmond" className="w-full rounded-[var(--radius-sm)] border border-border bg-background px-3.5 py-2.5 text-sm text-foreground transition placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20" />
-                    </label>
-                    <label className="block">
-                      <span className="mb-1.5 block text-sm font-medium text-muted-foreground">State (optional)</span>
-                      <input value={region} onChange={(e) => setRegion(e.target.value)} placeholder="e.g. Virginia" className="w-full rounded-[var(--radius-sm)] border border-border bg-background px-3.5 py-2.5 text-sm text-foreground transition placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20" />
-                    </label>
-                  </div>
-                  <label className="block">
-                    <span className="mb-1.5 block text-sm font-medium text-foreground">Country</span>
-                    <span className="relative block">
-                      <select value={country} onChange={(e) => setCountry(e.target.value)} required className="w-full appearance-none rounded-[var(--radius-sm)] border border-border bg-background px-3.5 py-2.5 text-sm text-foreground transition focus:border-accent focus:ring-2 focus:ring-accent/20">
-                        <option value="" disabled>Select country</option>
-                        <option>United States</option>
-                        <option>Canada</option>
-                        <option>United Kingdom</option>
-                        <option>Australia</option>
-                        <option>Other</option>
-                      </select>
-                      <ChevronDown size={15} className="pointer-events-none absolute right-3 top-3 text-muted" />
-                    </span>
-                  </label>
-                  <fieldset>
-                    <legend className="mb-2 block text-sm font-medium text-foreground">Commute radius</legend>
-                    <div className="grid grid-cols-4 gap-2">
-                      {radiusOptions.map((distance) => (
-                        <button
-                          key={distance}
-                          type="button"
-                          onClick={() => setRadius(distance)}
-                          className={`rounded-[var(--radius-sm)] border px-2 py-2 text-sm font-semibold transition ${
-                            radius === distance
-                              ? "border-accent bg-accent/10 text-accent"
-                              : "border-border bg-background text-muted hover:border-border-hover"
-                          }`}
-                        >
-                          {distance} mi
-                        </button>
-                      ))}
-                    </div>
-                  </fieldset>
-                  <label className="block">
-                    <span className="mb-1.5 block text-sm font-medium text-foreground">Search scope</span>
-                    <span className="relative block">
-                      <select value={scope} onChange={(e) => setScope(e.target.value)} className="w-full appearance-none rounded-[var(--radius-sm)] border border-border bg-background px-3.5 py-2.5 text-sm text-foreground transition focus:border-accent focus:ring-2 focus:ring-accent/20">
-                        <option>Local first</option>
-                        <option>National opportunities</option>
-                        <option>Global opportunities</option>
-                      </select>
-                      <ChevronDown size={15} className="pointer-events-none absolute right-3 top-3 text-muted" />
-                    </span>
-                  </label>
-                  <button className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-accent px-4 py-3 text-sm font-semibold text-white transition hover:bg-accent-hover active:scale-[0.98]" type="submit">
-                    <Check size={16} /> {profileCreated ? "Save preferences" : "Save and continue"}
-                  </button>
-                </form>
-              </>
-            ) : (
-              <div className="flex min-h-[420px] flex-col justify-between">
                 <div>
-                  <div className="flex size-11 items-center justify-center rounded-[var(--radius-sm)] bg-accent-light text-accent">
-                    <BadgeCheck size={22} />
-                  </div>
-                  <h2 id="location-title" className="mt-5 text-2xl font-bold tracking-tight">Welcome, {name}.</h2>
-                  <p className="mt-2 text-sm leading-relaxed text-muted">
-                    Matches prioritize venues within {radius} miles of {formattedLocation}, then expand to {scope.toLowerCase()}.
-                  </p>
-                  <div className="mt-6 rounded-[var(--radius-sm)] border border-border bg-accent-light p-4">
-                    <div className="flex items-start gap-3">
-                      <Navigation size={17} className="mt-0.5 shrink-0 text-accent" />
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">Location matching active</p>
-                        <p className="mt-0.5 text-sm text-muted">Distance and work setup factored into your results.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-6 space-y-2.5">
-                  <button onClick={openLocationEditor} className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-accent-light">
-                    <Pencil size={15} /> Edit preferences
-                  </button>
-                  <a href="#opportunities" className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-accent px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-accent-hover active:scale-[0.98]">
-                    View matches <ArrowRight size={16} />
-                  </a>
+                  <p className="text-sm font-semibold text-foreground">13+ Active Opportunities</p>
+                  <p className="mt-0.5 text-xs text-muted">From top companies like Vercel, OpenAI, Stripe, and more</p>
                 </div>
               </div>
-            )}
-          </motion.section>
+
+              <div className="flex items-start gap-3 rounded-[var(--radius-sm)] border border-border bg-background p-4">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-accent-light text-accent">
+                  <Zap size={17} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Location-Aware Matching</p>
+                  <p className="mt-0.5 text-xs text-muted">Set your location once and get distance-based results</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 rounded-[var(--radius-sm)] border border-border bg-background p-4">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-accent-light text-accent">
+                  <GraduationCap size={17} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Free Certifications</p>
+                  <p className="mt-0.5 text-xs text-muted">Skill up with webinars and courses tied to real roles</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 rounded-[var(--radius-sm)] border border-border bg-background p-4">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-accent-light text-accent">
+                  <Globe size={17} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Local to Global</p>
+                  <p className="mt-0.5 text-xs text-muted">Start nearby and expand your search when you are ready</p>
+                </div>
+              </div>
+            </div>
+
+            <Link
+              href="/get-started"
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-accent px-4 py-3 text-sm font-semibold text-white transition hover:bg-accent-hover active:scale-[0.98]"
+            >
+              Create your profile <ArrowRight size={16} />
+            </Link>
+          </motion.div>
         </div>
+
       </section>
 
       {/* Opportunities */}
       <section id="opportunities" className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            <h2 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               Opportunities that fit your life
             </h2>
             <p className="mt-1.5 text-muted">Clear pay, clear expectations, location-aware details.</p>
           </div>
-          {profileCreated && (
-            <button onClick={openLocationEditor} className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition hover:text-accent-hover">
-              <MapPin size={15} /> Matching from {city}
-            </button>
-          )}
         </div>
 
         <AnimatePresence>
@@ -467,11 +301,6 @@ export default function Home() {
             <div className="mt-5 space-y-5">
               <div className="border-t border-border pt-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted">Location</p>
-                <button onClick={openLocationEditor} className="mt-2.5 flex w-full items-start gap-2 text-left text-sm font-medium text-foreground">
-                  <MapPin size={15} className="mt-0.5 shrink-0 text-accent" />
-                  <span>{profileCreated ? `${formattedLocation}` : "Set your location"}</span>
-                </button>
-                {profileCreated && <p className="mt-1 pl-[23px] text-xs text-muted">{radius} mi radius</p>}
                 <label className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
                   <input checked={includeRemote} onChange={(e) => setIncludeRemote(e.target.checked)} type="checkbox" className="size-3.5 accent-accent" />
                   Include remote
@@ -497,9 +326,35 @@ export default function Home() {
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted">Learning</p>
                 <div className="mt-2.5 space-y-2 text-sm text-muted-foreground">
                   <label className="flex items-center gap-2">
-                    <input checked={showCertOnly} onChange={(e) => setShowCertOnly(e.target.checked)} type="checkbox" className="size-3.5 accent-accent" /> Certifications & webinars
+                    <input checked={showCertOnly} onChange={(e) => setShowCertOnly(e.target.checked)} type="checkbox" className="size-3.5 accent-accent" /> Certifications
                   </label>
-                  <p className="pl-[22px] text-xs text-muted">Show roles with online learning available</p>
+                  <p className="pl-[22px] text-xs text-muted">Show roles with certifications available</p>
+                  <label className="flex items-center gap-2">
+                    <input checked={showWebinarOnly} onChange={(e) => setShowWebinarOnly(e.target.checked)} type="checkbox" className="size-3.5 accent-accent" /> Webinars
+                  </label>
+                  <p className="pl-[22px] text-xs text-muted">Show roles with webinar access</p>
+                </div>
+              </div>
+
+              <div className="border-t border-border pt-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Salary Range</p>
+                <div className="mt-2.5 space-y-2 text-sm text-muted-foreground">
+                  {["$0-20/hr", "$20-40/hr", "$40-60/hr", "$60+/hr"].map((range) => (
+                    <label key={range} className="flex items-center gap-2">
+                      <input checked={salaryRange.includes(range)} onChange={() => toggleSalaryRange(range)} type="checkbox" className="size-3.5 accent-accent" /> {range}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-border pt-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Work Arrangement</p>
+                <div className="mt-2.5 space-y-2 text-sm text-muted-foreground">
+                  {["On-site only", "Remote", "Hybrid"].map((hours) => (
+                    <label key={hours} className="flex items-center gap-2">
+                      <input checked={workingHours.includes(hours)} onChange={() => toggleWorkingHours(hours)} type="checkbox" className="size-3.5 accent-accent" /> {hours}
+                    </label>
+                  ))}
                 </div>
               </div>
 
@@ -531,22 +386,18 @@ export default function Home() {
             </div>
 
             <div className="mb-4 flex items-center justify-between px-0.5 text-sm text-muted">
-              <p><strong className="text-foreground">{visibleOpportunities.length}</strong> matches</p>
-              {profileCreated && (
-                <p className="hidden items-center gap-1.5 text-accent sm:flex">
-                  <Navigation size={14} /> Location active
-                </p>
-              )}
+              <p><strong className="text-foreground">{visibleOpportunities.length}</strong> matches {visibleOpportunities.length > 6 && <span>(showing 6)</span>}</p>
             </div>
 
             <div className="space-y-3">
-              {visibleOpportunities.length > 0 ? (
-                visibleOpportunities.map((job, index) => {
+              {homepageOpportunities.length > 0 ? (
+                <>
+                  {homepageOpportunities.map((job, index) => {
                   const isSaved = savedJobs.includes(job.title);
                   const typeColors: Record<string, string> = {
-                    Remote: "bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300",
-                    "In person": "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-                    Hybrid: "bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300",
+                    Remote: "bg-violet-100 text-black dark:bg-violet-900/40 dark:text-violet-100",
+                    "In person": "bg-blue-100 text-black dark:bg-blue-900/40 dark:text-blue-100",
+                    Hybrid: "bg-teal-100 text-black dark:bg-teal-900/40 dark:text-teal-100",
                   };
                   const scopeColors: Record<string, string> = {
                     Local: "text-emerald-600 dark:text-emerald-400",
@@ -609,6 +460,11 @@ export default function Home() {
                                 <GraduationCap size={12} /> Cert available
                               </span>
                             )}
+                            {job.hasWebinar && (
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400">
+                                <Video size={12} /> Webinar
+                              </span>
+                            )}
                             <button
                               onClick={() => setSelectedRole(job.title)}
                               className="ml-auto inline-flex items-center gap-1 text-sm font-semibold text-accent transition hover:text-accent-hover"
@@ -620,7 +476,18 @@ export default function Home() {
                       </div>
                     </motion.article>
                   );
-                })
+                })}
+                  {visibleOpportunities.length > 6 && (
+                    <div className="mt-4 text-center">
+                      <Link
+                        href="/opportunities"
+                        className="inline-flex items-center gap-2 rounded-[var(--radius-sm)] bg-accent px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-accent-hover active:scale-[0.98]"
+                      >
+                        View all opportunities <ArrowRight size={15} />
+                      </Link>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="rounded-[var(--radius)] border border-dashed border-border bg-surface px-6 py-14 text-center">
                   <Search size={20} className="mx-auto text-muted" />
@@ -639,14 +506,14 @@ export default function Home() {
       {/* How it works */}
       <section id="how-it-works" className="border-t border-border bg-surface">
         <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
-          <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          <h2 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             A clearer path from local to global
           </h2>
           <p className="mt-2 max-w-lg text-muted">
             Set your preferences once, then let the platform work for you.
           </p>
 
-          <div className="mt-12 grid gap-px overflow-hidden rounded-[var(--radius)] border border-border bg-border md:grid-cols-2">
+          <div className="mt-12 flex flex-wrap justify-center gap-[5px]">
             {[
               {
                 icon: MapPin,
@@ -682,7 +549,7 @@ export default function Home() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.3 }}
                   transition={{ duration: 0.4, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] }}
-                  className="bg-surface p-7 sm:p-8"
+                  className="w-[calc(50%-3px)] rounded-[var(--radius)] border border-border bg-surface p-7 sm:p-8 md:w-[calc(50%-3px)]"
                 >
                   <div className="flex size-10 items-center justify-center rounded-[var(--radius-sm)] bg-accent-light text-accent">
                     <Icon size={19} />
@@ -701,7 +568,7 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-              <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              <h2 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                 Level up with webinars and certifications
               </h2>
               <p className="mt-2 max-w-lg text-muted">
@@ -782,7 +649,7 @@ export default function Home() {
                       <span className="inline-flex items-center gap-1.5 text-xs text-muted">
                         <Users size={13} /> {webinar.attendees} registered
                       </span>
-                      <button className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition hover:text-accent-hover">
+                      <button onClick={openContactModal} className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition hover:text-accent-hover">
                         Register <ArrowRight size={14} />
                       </button>
                     </div>
@@ -885,7 +752,7 @@ export default function Home() {
                       </div>
                       <div className="mt-3.5 flex items-center justify-between">
                         <span className="text-xs text-muted">{cert.enrolled.toLocaleString()} enrolled</span>
-                        <button className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition hover:text-accent-hover">
+                        <button onClick={openContactModal} className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition hover:text-accent-hover">
                           Enroll <ArrowRight size={14} />
                         </button>
                       </div>
@@ -898,24 +765,86 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer id="employers" className="border-t border-border bg-surface">
-        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <div className="flex items-center gap-2 font-bold text-foreground">
-            <span className="flex size-7 items-center justify-center rounded-[var(--radius-xs)] bg-accent text-white">
-              <BriefcaseBusiness size={13} />
-            </span>
-            internhub
-          </div>
-          <div className="flex flex-wrap gap-x-5 gap-y-2">
-            <a href="#top" className="hover:text-foreground">Privacy</a>
-            <a href="#top" className="hover:text-foreground">Terms</a>
-            <a href="#top" className="hover:text-foreground">Help center</a>
-            <a href="#top" className="hover:text-foreground">For employers</a>
-          </div>
-          <p className="text-muted">2026 InternHub</p>
-        </div>
-      </footer>
+      {/* Contact Form Modal */}
+      <AnimatePresence>
+        {contactModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+            onClick={() => setContactModalOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full max-w-md rounded-[var(--radius)] border border-border bg-surface-elevated p-6 shadow-xl sm:p-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-bold tracking-tight text-foreground">Contact Information</h2>
+                  <p className="mt-1.5 text-sm text-muted">Fill in your details to register or enroll.</p>
+                </div>
+                <button onClick={() => setContactModalOpen(false)} aria-label="Close" className="rounded-[var(--radius-xs)] p-1.5 text-muted transition hover:bg-accent-light hover:text-foreground">
+                  <X size={18} />
+                </button>
+              </div>
+
+              {contactSubmitted ? (
+                <div className="mt-6 rounded-[var(--radius-sm)] border border-emerald-200 bg-emerald-50 p-5 text-center dark:border-emerald-800 dark:bg-emerald-900/20">
+                  <Check size={24} className="mx-auto text-emerald-600 dark:text-emerald-400" />
+                  <h3 className="mt-3 font-bold text-foreground">Submitted successfully!</h3>
+                  <p className="mt-1 text-sm text-muted">Our team will contact you at the provided email/phone.</p>
+                  <button onClick={() => setContactModalOpen(false)} className="mt-4 text-sm font-semibold text-accent hover:text-accent-hover">
+                    Close
+                  </button>
+                </div>
+              ) : (
+                <form className="mt-6 space-y-4" onSubmit={submitContactForm}>
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm font-medium text-foreground">Email / Gmail</span>
+                    <input
+                      value={contactEmail}
+                      onChange={(e) => setContactEmail(e.target.value)}
+                      required
+                      type="email"
+                      placeholder="you@example.com"
+                      className="w-full rounded-[var(--radius-sm)] border border-border bg-background px-3.5 py-2.5 text-sm text-foreground transition placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm font-medium text-foreground">Phone number</span>
+                    <input
+                      value={contactPhone}
+                      onChange={(e) => setContactPhone(e.target.value)}
+                      type="tel"
+                      placeholder="+1 (555) 000-0000"
+                      className="w-full rounded-[var(--radius-sm)] border border-border bg-background px-3.5 py-2.5 text-sm text-foreground transition placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm font-medium text-foreground">Additional information</span>
+                    <textarea
+                      value={contactMessage}
+                      onChange={(e) => setContactMessage(e.target.value)}
+                      rows={3}
+                      placeholder="Any additional details or questions..."
+                      className="w-full rounded-[var(--radius-sm)] border border-border bg-background px-3.5 py-2.5 text-sm text-foreground transition placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
+                    />
+                  </label>
+                  <button className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-accent px-4 py-3 text-sm font-semibold text-white transition hover:bg-accent-hover active:scale-[0.98]" type="submit">
+                    <Check size={16} /> Submit
+                  </button>
+                </form>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </main>
   );
 }

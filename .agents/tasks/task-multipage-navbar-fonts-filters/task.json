@@ -1,0 +1,7 @@
+{
+  "task_id": "task-multipage-navbar-fonts-filters",
+  "task_description": "Restructure the InternHub single-page app into a multi-page Next.js application with new navbar (Home, For Employees, For Students, Post), add a second display font for headings, and separate the Certifications and Webinars filter checkboxes.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001", "FEAT-002"],
+  "blocked_reason": null
+}
