@@ -76,13 +76,13 @@ export default function Home() {
         });
       }
 
-      // Working hours filter (maps to type for demonstration)
+      // Work arrangement filter
       let hoursMatches = true;
       if (workingHours.length > 0) {
         hoursMatches = workingHours.some((hours) => {
-          if (hours === "Full-time") return job.type === "In person";
-          if (hours === "Part-time") return job.level === "Internship";
-          if (hours === "Flexible") return job.type === "Remote" || job.type === "Hybrid";
+          if (hours === "On-site only") return job.type === "In person";
+          if (hours === "Remote") return job.type === "Remote";
+          if (hours === "Hybrid") return job.type === "Hybrid";
           return true;
         });
       }
@@ -91,7 +91,7 @@ export default function Home() {
     });
 
     return [...filtered].sort((first, second) =>
-      sortOrder === "Highest pay" ? second.pay.localeCompare(first.pay) : 0,
+      sortOrder === "Highest pay" ? parsePayToHourly(second.pay) - parsePayToHourly(first.pay) : 0,
     );
   }, [includeRemote, levels, searchQuery, showCertOnly, showWebinarOnly, showHybrid, sortOrder, salaryRange, workingHours]);
 
@@ -146,6 +146,16 @@ export default function Home() {
   function submitContactForm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!contactEmail.trim()) return;
+    // Persist submission to localStorage
+    const submission = {
+      email: contactEmail.trim(),
+      phone: contactPhone.trim(),
+      message: contactMessage.trim(),
+      submittedAt: new Date().toISOString(),
+    };
+    const existing = JSON.parse(localStorage.getItem("internhub_contact_submissions") || "[]");
+    existing.push(submission);
+    localStorage.setItem("internhub_contact_submissions", JSON.stringify(existing));
     setContactSubmitted(true);
   }
 
@@ -338,9 +348,9 @@ export default function Home() {
               </div>
 
               <div className="border-t border-border pt-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Working Hours</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Work Arrangement</p>
                 <div className="mt-2.5 space-y-2 text-sm text-muted-foreground">
-                  {["Full-time", "Part-time", "Flexible"].map((hours) => (
+                  {["On-site only", "Remote", "Hybrid"].map((hours) => (
                     <label key={hours} className="flex items-center gap-2">
                       <input checked={workingHours.includes(hours)} onChange={() => toggleWorkingHours(hours)} type="checkbox" className="size-3.5 accent-accent" /> {hours}
                     </label>
@@ -787,7 +797,7 @@ export default function Home() {
                 <div className="mt-6 rounded-[var(--radius-sm)] border border-emerald-200 bg-emerald-50 p-5 text-center dark:border-emerald-800 dark:bg-emerald-900/20">
                   <Check size={24} className="mx-auto text-emerald-600 dark:text-emerald-400" />
                   <h3 className="mt-3 font-bold text-foreground">Submitted successfully!</h3>
-                  <p className="mt-1 text-sm text-muted">We will reach out to you shortly.</p>
+                  <p className="mt-1 text-sm text-muted">Our team will contact you at the provided email/phone.</p>
                   <button onClick={() => setContactModalOpen(false)} className="mt-4 text-sm font-semibold text-accent hover:text-accent-hover">
                     Close
                   </button>
