@@ -15,15 +15,15 @@ import {
   Globe,
   GraduationCap,
   MapPin,
-  Navigation,
-  Pencil,
   Play,
   Search,
   SlidersHorizontal,
   Star,
+  TrendingUp,
   Users,
   Video,
   X,
+  Zap,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
@@ -247,17 +247,7 @@ const opportunities: Opportunity[] = [
   },
 ];
 
-const radiusOptions = ["10", "25", "50", "100"];
-
 export default function Home() {
-  const [name, setName] = useState("");
-  const [city, setCity] = useState("");
-  const [region, setRegion] = useState("");
-  const [country, setCountry] = useState("");
-  const [radius, setRadius] = useState("25");
-  const [scope, setScope] = useState("Local first");
-  const [profileCreated, setProfileCreated] = useState(false);
-  const [editingLocation, setEditingLocation] = useState(false);
   const [savedJobs, setSavedJobs] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<"Newest" | "Highest pay">("Newest");
@@ -267,17 +257,14 @@ export default function Home() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [showCertOnly, setShowCertOnly] = useState(false);
   const [showWebinarOnly, setShowWebinarOnly] = useState(false);
+  const [salaryRange, setSalaryRange] = useState<string[]>([]);
+  const [workingHours, setWorkingHours] = useState<string[]>([]);
+  const [minRating, setMinRating] = useState(0);
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [contactMessage, setContactMessage] = useState("");
   const [contactSubmitted, setContactSubmitted] = useState(false);
-  const [salaryRange, setSalaryRange] = useState<string[]>([]);
-  const [workingHours, setWorkingHours] = useState<string[]>([]);
-  const [minRating, setMinRating] = useState(0);
-
-  const formattedLocation = [city, region, country].filter(Boolean).join(", ") || "Your location";
-  const profileIsEditing = !profileCreated || editingLocation;
 
   const visibleOpportunities = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -329,13 +316,6 @@ export default function Home() {
 
   const homepageOpportunities = visibleOpportunities.slice(0, 6);
 
-  function saveProfile(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!name.trim() || !city.trim() || !country) return;
-    setProfileCreated(true);
-    setEditingLocation(false);
-  }
-
   function toggleSave(title: string) {
     setSavedJobs((current) =>
       current.includes(title)
@@ -348,13 +328,6 @@ export default function Home() {
     setLevels((current) =>
       current.includes(level) ? current.filter((item) => item !== level) : [...current, level],
     );
-  }
-
-  function openLocationEditor() {
-    setEditingLocation(true);
-    window.setTimeout(() => {
-      document.getElementById("location-preferences")?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 0);
   }
 
   function clearFilters() {
@@ -417,12 +390,12 @@ export default function Home() {
               Find internships and early-career roles with transparent pay, flexible setups, and location-aware details.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <button
-                onClick={openLocationEditor}
+              <Link
+                href="/get-started"
                 className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-accent px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-hover active:scale-[0.98]"
               >
-                {profileCreated ? "Update preferences" : "Find my matches"} <ArrowRight size={16} />
-              </button>
+                Find my matches <ArrowRight size={16} />
+              </Link>
               <a
                 href="#opportunities"
                 className="inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-border bg-surface px-5 py-3 text-sm font-semibold text-foreground transition hover:border-border-hover hover:bg-accent-light"
@@ -437,320 +410,67 @@ export default function Home() {
             </div>
           </motion.div>
 
-          {/* Profile / Location Card */}
-          <motion.section
-            id="location-preferences"
+          {/* Feature Highlights Card */}
+          <motion.div
             className="rounded-[var(--radius)] border border-border bg-surface-elevated p-5 shadow-[var(--card-shadow)] sm:p-7"
-            aria-labelledby="location-title"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
-            {profileIsEditing ? (
-              <>
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h2 id="location-title" className="text-xl font-bold tracking-tight">
-                      {profileCreated ? "Update your location" : "Create your profile"}
-                    </h2>
-                    <p className="mt-1.5 text-sm leading-relaxed text-muted">
-                      We use this to rank nearby venues and calculate distances.
-                    </p>
-                  </div>
-                  {profileCreated && (
-                    <button onClick={() => setEditingLocation(false)} aria-label="Close" className="rounded-[var(--radius-xs)] p-1.5 text-muted transition hover:bg-accent-light hover:text-foreground">
-                      <X size={18} />
-                    </button>
-                  )}
+            <h2 className="text-xl font-bold tracking-tight text-foreground">Why InternHub?</h2>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted">Everything you need to land your first role.</p>
+
+            <div className="mt-6 space-y-4">
+              <div className="flex items-start gap-3 rounded-[var(--radius-sm)] border border-border bg-background p-4">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-accent-light text-accent">
+                  <TrendingUp size={17} />
                 </div>
-                <form className="mt-6 space-y-4" onSubmit={saveProfile}>
-                  <label className="block">
-                    <span className="mb-1.5 block text-sm font-medium text-foreground">Your name</span>
-                    <input value={name} onChange={(e) => setName(e.target.value)} required placeholder="e.g. Jordan Lee" className="w-full rounded-[var(--radius-sm)] border border-border bg-background px-3.5 py-2.5 text-sm text-foreground transition placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20" />
-                  </label>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="block">
-                      <span className="mb-1.5 block text-sm font-medium text-foreground">City</span>
-                      <input value={city} onChange={(e) => setCity(e.target.value)} required placeholder="e.g. Richmond" className="w-full rounded-[var(--radius-sm)] border border-border bg-background px-3.5 py-2.5 text-sm text-foreground transition placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20" />
-                    </label>
-                    <label className="block">
-                      <span className="mb-1.5 block text-sm font-medium text-muted-foreground">State (optional)</span>
-                      <input value={region} onChange={(e) => setRegion(e.target.value)} placeholder="e.g. Virginia" className="w-full rounded-[var(--radius-sm)] border border-border bg-background px-3.5 py-2.5 text-sm text-foreground transition placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20" />
-                    </label>
-                  </div>
-                  <label className="block">
-                    <span className="mb-1.5 block text-sm font-medium text-foreground">Country</span>
-                    <span className="relative block">
-                      <select value={country} onChange={(e) => setCountry(e.target.value)} required className="w-full appearance-none rounded-[var(--radius-sm)] border border-border bg-background px-3.5 py-2.5 text-sm text-foreground transition focus:border-accent focus:ring-2 focus:ring-accent/20">
-                        <option value="" disabled>Select country</option>
-                        <option>Afghanistan</option>
-                        <option>Albania</option>
-                        <option>Algeria</option>
-                        <option>Andorra</option>
-                        <option>Angola</option>
-                        <option>Antigua and Barbuda</option>
-                        <option>Argentina</option>
-                        <option>Armenia</option>
-                        <option>Australia</option>
-                        <option>Austria</option>
-                        <option>Azerbaijan</option>
-                        <option>Bahamas</option>
-                        <option>Bahrain</option>
-                        <option>Bangladesh</option>
-                        <option>Barbados</option>
-                        <option>Belarus</option>
-                        <option>Belgium</option>
-                        <option>Belize</option>
-                        <option>Benin</option>
-                        <option>Bhutan</option>
-                        <option>Bolivia</option>
-                        <option>Bosnia and Herzegovina</option>
-                        <option>Botswana</option>
-                        <option>Brazil</option>
-                        <option>Brunei</option>
-                        <option>Bulgaria</option>
-                        <option>Burkina Faso</option>
-                        <option>Burundi</option>
-                        <option>Cabo Verde</option>
-                        <option>Cambodia</option>
-                        <option>Cameroon</option>
-                        <option>Canada</option>
-                        <option>Central African Republic</option>
-                        <option>Chad</option>
-                        <option>Chile</option>
-                        <option>China</option>
-                        <option>Colombia</option>
-                        <option>Comoros</option>
-                        <option>Congo (Democratic Republic)</option>
-                        <option>Congo (Republic)</option>
-                        <option>Costa Rica</option>
-                        <option>Croatia</option>
-                        <option>Cuba</option>
-                        <option>Cyprus</option>
-                        <option>Czech Republic</option>
-                        <option>Denmark</option>
-                        <option>Djibouti</option>
-                        <option>Dominica</option>
-                        <option>Dominican Republic</option>
-                        <option>East Timor</option>
-                        <option>Ecuador</option>
-                        <option>Egypt</option>
-                        <option>El Salvador</option>
-                        <option>Equatorial Guinea</option>
-                        <option>Eritrea</option>
-                        <option>Estonia</option>
-                        <option>Eswatini</option>
-                        <option>Ethiopia</option>
-                        <option>Fiji</option>
-                        <option>Finland</option>
-                        <option>France</option>
-                        <option>Gabon</option>
-                        <option>Gambia</option>
-                        <option>Georgia</option>
-                        <option>Germany</option>
-                        <option>Ghana</option>
-                        <option>Greece</option>
-                        <option>Grenada</option>
-                        <option>Guatemala</option>
-                        <option>Guinea</option>
-                        <option>Guinea-Bissau</option>
-                        <option>Guyana</option>
-                        <option>Haiti</option>
-                        <option>Honduras</option>
-                        <option>Hungary</option>
-                        <option>Iceland</option>
-                        <option>India</option>
-                        <option>Indonesia</option>
-                        <option>Iran</option>
-                        <option>Iraq</option>
-                        <option>Ireland</option>
-                        <option>Israel</option>
-                        <option>Italy</option>
-                        <option>Ivory Coast</option>
-                        <option>Jamaica</option>
-                        <option>Japan</option>
-                        <option>Jordan</option>
-                        <option>Kazakhstan</option>
-                        <option>Kenya</option>
-                        <option>Kiribati</option>
-                        <option>Kosovo</option>
-                        <option>Kuwait</option>
-                        <option>Kyrgyzstan</option>
-                        <option>Laos</option>
-                        <option>Latvia</option>
-                        <option>Lebanon</option>
-                        <option>Lesotho</option>
-                        <option>Liberia</option>
-                        <option>Libya</option>
-                        <option>Liechtenstein</option>
-                        <option>Lithuania</option>
-                        <option>Luxembourg</option>
-                        <option>Madagascar</option>
-                        <option>Malawi</option>
-                        <option>Malaysia</option>
-                        <option>Maldives</option>
-                        <option>Mali</option>
-                        <option>Malta</option>
-                        <option>Marshall Islands</option>
-                        <option>Mauritania</option>
-                        <option>Mauritius</option>
-                        <option>Mexico</option>
-                        <option>Micronesia</option>
-                        <option>Moldova</option>
-                        <option>Monaco</option>
-                        <option>Mongolia</option>
-                        <option>Montenegro</option>
-                        <option>Morocco</option>
-                        <option>Mozambique</option>
-                        <option>Myanmar</option>
-                        <option>Namibia</option>
-                        <option>Nauru</option>
-                        <option>Nepal</option>
-                        <option>Netherlands</option>
-                        <option>New Zealand</option>
-                        <option>Nicaragua</option>
-                        <option>Niger</option>
-                        <option>Nigeria</option>
-                        <option>North Korea</option>
-                        <option>North Macedonia</option>
-                        <option>Norway</option>
-                        <option>Oman</option>
-                        <option>Pakistan</option>
-                        <option>Palau</option>
-                        <option>Palestine</option>
-                        <option>Panama</option>
-                        <option>Papua New Guinea</option>
-                        <option>Paraguay</option>
-                        <option>Peru</option>
-                        <option>Philippines</option>
-                        <option>Poland</option>
-                        <option>Portugal</option>
-                        <option>Qatar</option>
-                        <option>Romania</option>
-                        <option>Russia</option>
-                        <option>Rwanda</option>
-                        <option>Saint Kitts and Nevis</option>
-                        <option>Saint Lucia</option>
-                        <option>Saint Vincent and the Grenadines</option>
-                        <option>Samoa</option>
-                        <option>San Marino</option>
-                        <option>Sao Tome and Principe</option>
-                        <option>Saudi Arabia</option>
-                        <option>Senegal</option>
-                        <option>Serbia</option>
-                        <option>Seychelles</option>
-                        <option>Sierra Leone</option>
-                        <option>Singapore</option>
-                        <option>Slovakia</option>
-                        <option>Slovenia</option>
-                        <option>Solomon Islands</option>
-                        <option>Somalia</option>
-                        <option>South Africa</option>
-                        <option>South Korea</option>
-                        <option>South Sudan</option>
-                        <option>Spain</option>
-                        <option>Sri Lanka</option>
-                        <option>Sudan</option>
-                        <option>Suriname</option>
-                        <option>Sweden</option>
-                        <option>Switzerland</option>
-                        <option>Syria</option>
-                        <option>Taiwan</option>
-                        <option>Tajikistan</option>
-                        <option>Tanzania</option>
-                        <option>Thailand</option>
-                        <option>Togo</option>
-                        <option>Tonga</option>
-                        <option>Trinidad and Tobago</option>
-                        <option>Tunisia</option>
-                        <option>Turkey</option>
-                        <option>Turkmenistan</option>
-                        <option>Tuvalu</option>
-                        <option>Uganda</option>
-                        <option>Ukraine</option>
-                        <option>United Arab Emirates</option>
-                        <option>United Kingdom</option>
-                        <option>United States</option>
-                        <option>Uruguay</option>
-                        <option>Uzbekistan</option>
-                        <option>Vanuatu</option>
-                        <option>Vatican City</option>
-                        <option>Venezuela</option>
-                        <option>Vietnam</option>
-                        <option>Yemen</option>
-                        <option>Zambia</option>
-                        <option>Zimbabwe</option>
-                      </select>
-                      <ChevronDown size={15} className="pointer-events-none absolute right-3 top-3 text-muted" />
-                    </span>
-                  </label>
-                  <fieldset>
-                    <legend className="mb-2 block text-sm font-medium text-foreground">Commute radius</legend>
-                    <div className="grid grid-cols-4 gap-2">
-                      {radiusOptions.map((distance) => (
-                        <button
-                          key={distance}
-                          type="button"
-                          onClick={() => setRadius(distance)}
-                          className={`rounded-[var(--radius-sm)] border px-2 py-2 text-sm font-semibold transition ${
-                            radius === distance
-                              ? "border-accent bg-accent/10 text-accent"
-                              : "border-border bg-background text-muted hover:border-border-hover"
-                          }`}
-                        >
-                          {distance} mi
-                        </button>
-                      ))}
-                    </div>
-                  </fieldset>
-                  <label className="block">
-                    <span className="mb-1.5 block text-sm font-medium text-foreground">Search scope</span>
-                    <span className="relative block">
-                      <select value={scope} onChange={(e) => setScope(e.target.value)} className="w-full appearance-none rounded-[var(--radius-sm)] border border-border bg-background px-3.5 py-2.5 text-sm text-foreground transition focus:border-accent focus:ring-2 focus:ring-accent/20">
-                        <option>Local first</option>
-                        <option>National opportunities</option>
-                        <option>Global opportunities</option>
-                      </select>
-                      <ChevronDown size={15} className="pointer-events-none absolute right-3 top-3 text-muted" />
-                    </span>
-                  </label>
-                  <button className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-accent px-4 py-3 text-sm font-semibold text-white transition hover:bg-accent-hover active:scale-[0.98]" type="submit">
-                    <Check size={16} /> {profileCreated ? "Save preferences" : "Save and continue"}
-                  </button>
-                </form>
-              </>
-            ) : (
-              <div className="flex min-h-[420px] flex-col justify-between">
                 <div>
-                  <div className="flex size-11 items-center justify-center rounded-[var(--radius-sm)] bg-accent-light text-accent">
-                    <BadgeCheck size={22} />
-                  </div>
-                  <h2 id="location-title" className="mt-5 text-2xl font-bold tracking-tight">Welcome, {name}.</h2>
-                  <p className="mt-2 text-sm leading-relaxed text-muted">
-                    Matches prioritize venues within {radius} miles of {formattedLocation}, then expand to {scope.toLowerCase()}.
-                  </p>
-                  <div className="mt-6 rounded-[var(--radius-sm)] border border-border bg-accent-light p-4">
-                    <div className="flex items-start gap-3">
-                      <Navigation size={17} className="mt-0.5 shrink-0 text-accent" />
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">Location matching active</p>
-                        <p className="mt-0.5 text-sm text-muted">Distance and work setup factored into your results.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-6 space-y-2.5">
-                  <button onClick={openLocationEditor} className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-accent-light">
-                    <Pencil size={15} /> Edit preferences
-                  </button>
-                  <a href="#opportunities" className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-accent px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-accent-hover active:scale-[0.98]">
-                    View matches <ArrowRight size={16} />
-                  </a>
+                  <p className="text-sm font-semibold text-foreground">13+ Active Opportunities</p>
+                  <p className="mt-0.5 text-xs text-muted">From top companies like Vercel, OpenAI, Stripe, and more</p>
                 </div>
               </div>
-            )}
-          </motion.section>
+
+              <div className="flex items-start gap-3 rounded-[var(--radius-sm)] border border-border bg-background p-4">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-accent-light text-accent">
+                  <Zap size={17} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Location-Aware Matching</p>
+                  <p className="mt-0.5 text-xs text-muted">Set your location once and get distance-based results</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 rounded-[var(--radius-sm)] border border-border bg-background p-4">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-accent-light text-accent">
+                  <GraduationCap size={17} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Free Certifications</p>
+                  <p className="mt-0.5 text-xs text-muted">Skill up with webinars and courses tied to real roles</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 rounded-[var(--radius-sm)] border border-border bg-background p-4">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-accent-light text-accent">
+                  <Globe size={17} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Local to Global</p>
+                  <p className="mt-0.5 text-xs text-muted">Start nearby and expand your search when you are ready</p>
+                </div>
+              </div>
+            </div>
+
+            <Link
+              href="/get-started"
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-accent px-4 py-3 text-sm font-semibold text-white transition hover:bg-accent-hover active:scale-[0.98]"
+            >
+              Create your profile <ArrowRight size={16} />
+            </Link>
+          </motion.div>
         </div>
+
       </section>
 
       {/* Opportunities */}
@@ -762,11 +482,6 @@ export default function Home() {
             </h2>
             <p className="mt-1.5 text-muted">Clear pay, clear expectations, location-aware details.</p>
           </div>
-          {profileCreated && (
-            <button onClick={openLocationEditor} className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition hover:text-accent-hover">
-              <MapPin size={15} /> Matching from {city}
-            </button>
-          )}
         </div>
 
         <AnimatePresence>
@@ -796,11 +511,6 @@ export default function Home() {
             <div className="mt-5 space-y-5">
               <div className="border-t border-border pt-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted">Location</p>
-                <button onClick={openLocationEditor} className="mt-2.5 flex w-full items-start gap-2 text-left text-sm font-medium text-foreground">
-                  <MapPin size={15} className="mt-0.5 shrink-0 text-accent" />
-                  <span>{profileCreated ? `${formattedLocation}` : "Set your location"}</span>
-                </button>
-                {profileCreated && <p className="mt-1 pl-[23px] text-xs text-muted">{radius} mi radius</p>}
                 <label className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
                   <input checked={includeRemote} onChange={(e) => setIncludeRemote(e.target.checked)} type="checkbox" className="size-3.5 accent-accent" />
                   Include remote
@@ -907,11 +617,6 @@ export default function Home() {
 
             <div className="mb-4 flex items-center justify-between px-0.5 text-sm text-muted">
               <p><strong className="text-foreground">{visibleOpportunities.length}</strong> matches {visibleOpportunities.length > 6 && <span>(showing 6)</span>}</p>
-              {profileCreated && (
-                <p className="hidden items-center gap-1.5 text-accent sm:flex">
-                  <Navigation size={14} /> Location active
-                </p>
-              )}
             </div>
 
             <div className="space-y-3">
