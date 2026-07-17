@@ -63,9 +63,9 @@ export default function OpportunitiesPage() {
       let hoursMatches = true;
       if (workingHours.length > 0) {
         hoursMatches = workingHours.some((hours) => {
-          if (hours === "Full-time") return job.type === "In person";
-          if (hours === "Part-time") return job.level === "Internship";
-          if (hours === "Flexible") return job.type === "Remote" || job.type === "Hybrid";
+          if (hours === "On-site only") return job.type === "In person";
+          if (hours === "Remote") return job.type === "Remote";
+          if (hours === "Hybrid") return job.type === "Hybrid";
           return true;
         });
       }
@@ -74,7 +74,7 @@ export default function OpportunitiesPage() {
     });
 
     return [...result].sort((first, second) =>
-      sortOrder === "Highest pay" ? second.pay.localeCompare(first.pay) : 0,
+      sortOrder === "Highest pay" ? parsePayToHourly(second.pay) - parsePayToHourly(first.pay) : 0,
     );
   }, [searchQuery, includeRemote, showHybrid, levels, showCertOnly, showWebinarOnly, sortOrder, salaryRange, workingHours]);
 
@@ -203,9 +203,9 @@ export default function OpportunitiesPage() {
               </div>
 
               <div className="border-t border-border pt-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Working Hours</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted">Work Arrangement</p>
                 <div className="mt-2.5 space-y-2 text-sm text-muted-foreground">
-                  {["Full-time", "Part-time", "Flexible"].map((hours) => (
+                  {["On-site only", "Remote", "Hybrid"].map((hours) => (
                     <label key={hours} className="flex items-center gap-2">
                       <input checked={workingHours.includes(hours)} onChange={() => toggleWorkingHours(hours)} type="checkbox" className="size-3.5 accent-accent" /> {hours}
                     </label>
