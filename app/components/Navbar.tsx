@@ -62,7 +62,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-30 border-b border-border bg-surface/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
         <Link className="flex shrink-0 items-center gap-2" href="/" aria-label="Grow Tern home">
-          <TernLogo size={28} className="text-accent" />
+          <TernLogo size={36} className="text-accent" />
           <span className="text-base font-bold tracking-tight text-foreground">Grow Tern</span>
         </Link>
 
