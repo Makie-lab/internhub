@@ -1,6 +1,7 @@
 "use client";
 
-import { BriefcaseBusiness, Menu, Moon, Sun, X } from "lucide-react";
+import { Menu, Moon, Sun, X } from "lucide-react";
+import TernLogo from "./TernLogo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useSyncExternalStore, useState } from "react";
@@ -24,7 +25,7 @@ function subscribeDarkMode(callback: () => void) {
 }
 
 function getDarkModeSnapshot(): boolean {
-  const stored = localStorage.getItem("internhub-dark");
+  const stored = localStorage.getItem("growtern-dark");
   if (stored !== null) return stored === "true";
   return window.matchMedia("(prefers-color-scheme: dark)").matches;
 }
@@ -47,10 +48,10 @@ export default function Navbar() {
 
   const toggleDarkMode = useCallback(() => {
     const next = !getDarkModeSnapshot();
-    localStorage.setItem("internhub-dark", String(next));
+    localStorage.setItem("growtern-dark", String(next));
     document.documentElement.classList.toggle("dark", next);
     // Trigger re-render by dispatching a storage event on same window
-    window.dispatchEvent(new StorageEvent("storage", { key: "internhub-dark" }));
+    window.dispatchEvent(new StorageEvent("storage", { key: "growtern-dark" }));
   }, []);
 
   function handleNavClick() {
@@ -60,11 +61,11 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-surface/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
-        <Link className="flex shrink-0 items-center gap-2.5" href="/" aria-label="InternHub home">
+        <Link className="flex shrink-0 items-center gap-2.5" href="/" aria-label="Grow Tern home">
           <span className="flex size-9 items-center justify-center rounded-[var(--radius-sm)] bg-accent text-white">
-            <BriefcaseBusiness size={18} strokeWidth={2.2} />
+            <TernLogo size={18} />
           </span>
-          <span className="text-base font-bold tracking-tight text-foreground">internhub</span>
+          <span className="text-base font-bold tracking-tight text-foreground">Grow Tern</span>
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-medium text-muted md:flex">

@@ -153,9 +153,9 @@ export default function Home() {
       message: contactMessage.trim(),
       submittedAt: new Date().toISOString(),
     };
-    const existing = JSON.parse(localStorage.getItem("internhub_contact_submissions") || "[]");
+    const existing = JSON.parse(localStorage.getItem("growtern_contact_submissions") || "[]");
     existing.push(submission);
-    localStorage.setItem("internhub_contact_submissions", JSON.stringify(existing));
+    localStorage.setItem("growtern_contact_submissions", JSON.stringify(existing));
 
     // Send registration email via API (fire-and-forget)
     fetch("/api/email", {
@@ -165,7 +165,7 @@ export default function Home() {
         to: contactEmail.trim(),
         name: contactEmail.trim().split("@")[0],
         type: "registration",
-        data: { event_name: "InternHub Program" },
+        data: { event_name: "Grow Tern Program" },
       }),
     }).catch(() => {
       // Silently ignore email errors
@@ -222,7 +222,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
-            <h2 className="text-xl font-bold tracking-tight text-foreground">Why InternHub?</h2>
+            <h2 className="text-xl font-bold tracking-tight text-foreground">Why Grow Tern?</h2>
             <p className="mt-1.5 text-sm leading-relaxed text-muted">Everything you need to land your first role.</p>
 
             <div className="mt-6 space-y-4">
@@ -683,7 +683,7 @@ export default function Home() {
               {[
                 {
                   title: "Full-Stack Web Development",
-                  provider: "InternHub Academy",
+                  provider: "Grow Tern Academy",
                   modules: 12,
                   hours: 48,
                   level: "Beginner to Intermediate",
@@ -694,7 +694,7 @@ export default function Home() {
                 },
                 {
                   title: "Cloud Infrastructure Fundamentals",
-                  provider: "InternHub Academy",
+                  provider: "Grow Tern Academy",
                   modules: 8,
                   hours: 32,
                   level: "Intermediate",
@@ -705,7 +705,7 @@ export default function Home() {
                 },
                 {
                   title: "Frontend Engineering Professional",
-                  provider: "InternHub Academy",
+                  provider: "Grow Tern Academy",
                   modules: 10,
                   hours: 40,
                   level: "Intermediate to Advanced",
@@ -716,7 +716,7 @@ export default function Home() {
                 },
                 {
                   title: "Data Engineering with Python",
-                  provider: "InternHub Academy",
+                  provider: "Grow Tern Academy",
                   modules: 9,
                   hours: 36,
                   level: "Beginner to Intermediate",

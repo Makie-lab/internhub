@@ -71,7 +71,7 @@ export default function PostPage() {
             </h1>
             <p className="mt-4 max-w-lg text-base leading-relaxed text-muted">
               Reach thousands of motivated students and early-career professionals.
-              Fill out the details below to list your role on InternHub.
+              Fill out the details below to list your role on Grow Tern.
             </p>
           </motion.div>
         </div>
@@ -92,7 +92,7 @@ export default function PostPage() {
               Opportunity submitted!
             </h2>
             <p className="mt-2 text-muted">
-              Your listing is under review. It will appear on InternHub once approved.
+              Your listing is under review. It will appear on Grow Tern once approved.
             </p>
             <button
               onClick={() => setSubmitted(false)}

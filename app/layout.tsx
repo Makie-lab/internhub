@@ -22,7 +22,7 @@ const playfairDisplay = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "InternHub | Find internships that fit your life",
+  title: "Grow Tern | Find internships that fit your life",
   description:
     "Find local, national, and remote internships with transparent pay and venue details.",
 };
