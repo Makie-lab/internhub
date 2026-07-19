@@ -6,7 +6,7 @@ export default function Footer() {
     <footer className="border-t border-border bg-surface">
       <div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
         <Link href="/" className="flex items-center gap-2 font-bold text-foreground">
-          <TernLogo size={22} className="text-accent" />
+          <TernLogo size={28} className="text-accent" />
           Grow Tern
         </Link>
         <div className="flex flex-wrap gap-x-5 gap-y-2">
