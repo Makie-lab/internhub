@@ -8,8 +8,7 @@ import { NextResponse } from "next/server";
 
 const isPublicRoute = createRouteMatcher([
   "/",
-  "/opportunities",
-  "/mail",
+  "/sign-in(.*)",
   "/api/listings",
 ]);
 

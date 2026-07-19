@@ -8,10 +8,14 @@ import { useCallback, useSyncExternalStore, useState } from "react";
 import {
   Show,
   UserButton,
-  SignInButton,
 } from "@clerk/nextjs";
 
-const navLinks = [
+const publicLinks = [
+  { href: "/", label: "Home" },
+  { href: "/sign-in", label: "Sign in" },
+];
+
+const authenticatedLinks = [
   { href: "/", label: "Home" },
   { href: "/opportunities", label: "Opportunities" },
   { href: "/post", label: "Post" },
@@ -19,7 +23,6 @@ const navLinks = [
 ];
 
 function subscribeDarkMode(callback: () => void) {
-  // Listen for storage changes from other tabs
   window.addEventListener("storage", callback);
   return () => window.removeEventListener("storage", callback);
 }
@@ -41,7 +44,6 @@ export default function Navbar() {
   const darkMode = useSyncExternalStore(subscribeDarkMode, getDarkModeSnapshot, getDarkModeServerSnapshot);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Keep the DOM class in sync
   if (typeof document !== "undefined") {
     document.documentElement.classList.toggle("dark", darkMode);
   }
@@ -50,12 +52,52 @@ export default function Navbar() {
     const next = !getDarkModeSnapshot();
     localStorage.setItem("growtern-dark", String(next));
     document.documentElement.classList.toggle("dark", next);
-    // Trigger re-render by dispatching a storage event on same window
     window.dispatchEvent(new StorageEvent("storage", { key: "growtern-dark" }));
   }, []);
 
   function handleNavClick() {
     setMobileOpen(false);
+  }
+
+  // Navigation links component that adapts based on auth state
+  function NavLinks({ links }: { links: typeof publicLinks }) {
+    return (
+      <>
+        {links.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            onClick={handleNavClick}
+            className={`transition hover:text-foreground ${
+              pathname === link.href ? "text-foreground" : ""
+            }`}
+          >
+            {link.label}
+          </Link>
+        ))}
+      </>
+    );
+  }
+
+  function MobileNavLinks({ links }: { links: typeof publicLinks }) {
+    return (
+      <>
+        {links.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            onClick={handleNavClick}
+            className={`rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium transition hover:bg-accent-light ${
+              pathname === link.href
+                ? "bg-accent-light text-foreground"
+                : "text-muted"
+            }`}
+          >
+            {link.label}
+          </Link>
+        ))}
+      </>
+    );
   }
 
   return (
@@ -68,18 +110,18 @@ export default function Navbar() {
           <span className="text-base font-bold tracking-tight text-foreground">Grow Tern</span>
         </Link>
 
+        {/* Desktop nav */}
         <nav className="hidden items-center gap-6 text-sm font-medium text-muted md:flex">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`transition hover:text-foreground ${
-                pathname === link.href ? "text-foreground" : ""
-              }`}
+          {isClerkConfigured ? (
+            <Show
+              when="signed-in"
+              fallback={<NavLinks links={publicLinks} />}
             >
-              {link.label}
-            </Link>
-          ))}
+              <NavLinks links={authenticatedLinks} />
+            </Show>
+          ) : (
+            <NavLinks links={authenticatedLinks} />
+          )}
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
@@ -96,11 +138,12 @@ export default function Navbar() {
             <Show
               when="signed-in"
               fallback={
-                <SignInButton mode="modal">
-                  <button className="hidden rounded-[var(--radius-sm)] bg-accent px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-accent-hover sm:inline-flex">
-                    Sign in
-                  </button>
-                </SignInButton>
+                <Link
+                  href="/sign-in"
+                  className="hidden rounded-[var(--radius-sm)] bg-accent px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-accent-hover sm:inline-flex"
+                >
+                  Sign in
+                </Link>
               }
             >
               <UserButton
@@ -113,7 +156,7 @@ export default function Navbar() {
             </Show>
           ) : (
             <Link
-              href="/get-started"
+              href="/sign-in"
               className="hidden rounded-[var(--radius-sm)] bg-accent px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-accent-hover sm:inline-flex"
             >
               Sign in
@@ -134,20 +177,16 @@ export default function Navbar() {
       {mobileOpen && (
         <nav className="border-t border-border bg-surface px-5 py-4 md:hidden">
           <div className="flex flex-col gap-3">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={handleNavClick}
-                className={`rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium transition hover:bg-accent-light ${
-                  pathname === link.href
-                    ? "bg-accent-light text-foreground"
-                    : "text-muted"
-                }`}
+            {isClerkConfigured ? (
+              <Show
+                when="signed-in"
+                fallback={<MobileNavLinks links={publicLinks} />}
               >
-                {link.label}
-              </Link>
-            ))}
+                <MobileNavLinks links={authenticatedLinks} />
+              </Show>
+            ) : (
+              <MobileNavLinks links={authenticatedLinks} />
+            )}
           </div>
         </nav>
       )}

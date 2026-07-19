@@ -95,7 +95,7 @@ export default function GetStartedPage() {
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
             <h1 className="font-display text-4xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-5xl lg:text-[3.25rem]">
-              Get started with InternHub
+              Get started with Grow Tern
             </h1>
             <p className="mt-5 max-w-lg text-base leading-relaxed text-muted">
               Create your profile to unlock location-aware matches, personalized recommendations, and distance-based filtering for opportunities near you.
