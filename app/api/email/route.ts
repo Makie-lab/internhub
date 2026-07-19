@@ -14,13 +14,13 @@ function getEmailContent(type: EmailType, name: string, data?: Record<string, st
   switch (type) {
     case "welcome":
       return {
-        subject: `Welcome to InternHub, ${name}!`,
+        subject: `Welcome to Grow Tern, ${name}!`,
         html: `
-          <h1>Welcome to InternHub!</h1>
+          <h1>Welcome to Grow Tern!</h1>
           <p>Hi ${name},</p>
-          <p>Thanks for creating your profile on InternHub. You're now ready to discover opportunities that match your preferences.</p>
+          <p>Thanks for creating your profile on Grow Tern. You're now ready to discover opportunities that match your preferences.</p>
           <p>Your location-aware matches are being prepared. Check your dashboard to see personalized recommendations.</p>
-          <p>Best of luck,<br/>The InternHub Team</p>
+          <p>Best of luck,<br/>The Grow Tern Team</p>
         `,
       };
     case "application":
@@ -31,25 +31,25 @@ function getEmailContent(type: EmailType, name: string, data?: Record<string, st
           <p>Hi ${name},</p>
           <p>Your application for <strong>${data?.listing_title || "the position"}</strong> has been received.</p>
           <p>The employer will review your application and get back to you. You can check the status in your dashboard.</p>
-          <p>Best of luck,<br/>The InternHub Team</p>
+          <p>Best of luck,<br/>The Grow Tern Team</p>
         `,
       };
     case "registration":
       return {
-        subject: `Registration Confirmed - ${data?.event_name || "InternHub Event"}`,
+        subject: `Registration Confirmed - ${data?.event_name || "Grow Tern Event"}`,
         html: `
           <h1>Registration Confirmed!</h1>
           <p>Hi ${name},</p>
           <p>You've been registered for <strong>${data?.event_name || "the event"}</strong>.</p>
           ${data?.event_date ? `<p>Date: ${data.event_date}</p>` : ""}
           <p>We'll send you a reminder before the event starts.</p>
-          <p>See you there,<br/>The InternHub Team</p>
+          <p>See you there,<br/>The Grow Tern Team</p>
         `,
       };
     default:
       return {
-        subject: "InternHub Notification",
-        html: `<p>Hi ${name}, you have a new notification from InternHub.</p>`,
+        subject: "Grow Tern Notification",
+        html: `<p>Hi ${name}, you have a new notification from Grow Tern.</p>`,
       };
   }
 }
